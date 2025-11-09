@@ -185,3 +185,62 @@ class CargaRegistroViewSet(viewsets.ModelViewSet):
 class AuditoriaViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Auditoria.objects.select_related("usuario").all().order_by("-fecha")
     serializer_class = AuditoriaSerializer
+
+# =============================
+# VISTAS HTML CRUD (HTML templates)
+# =============================
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .forms import CalificacionTributariaForm
+
+@login_required
+def calificacion_list_view(request):
+    calificaciones = CalificacionTributaria.objects.select_related("instrumento", "factor").all()
+    return render(request, 'calificaciones/listado.html', {
+        'calificaciones': calificaciones
+    })
+
+@login_required
+def calificacion_create_view(request):
+    if request.method == 'POST':
+        form = CalificacionTributariaForm(request.POST)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.creado_por = request.user
+            obj.save()
+            return redirect('calificacion_list_view')
+    else:
+        form = CalificacionTributariaForm()
+
+    return render(request, 'calificaciones/formulario.html', {
+        'form': form
+    })
+
+@login_required
+def calificacion_update_view(request, id):
+    calificacion = get_object_or_404(CalificacionTributaria, id=id)
+
+    if request.method == 'POST':
+        form = CalificacionTributariaForm(request.POST, instance=calificacion)
+        if form.is_valid():
+            form.save()
+            return redirect('calificacion_list_view')
+    else:
+        form = CalificacionTributariaForm(instance=calificacion)
+
+    return render(request, 'calificaciones/formulario.html', {
+        'form': form,
+        'calificacion': calificacion
+    })
+
+@login_required
+def calificacion_delete_view(request, id):
+    calificacion = get_object_or_404(CalificacionTributaria, id=id)
+
+    if request.method == 'POST':
+        calificacion.delete()
+        return redirect('calificacion_list_view')
+
+    return render(request, 'calificaciones/eliminar.html', {
+        'calificacion': calificacion
+    })

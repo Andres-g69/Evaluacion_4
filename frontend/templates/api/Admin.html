@@ -1,183 +1,259 @@
+{% extends "api/BaseDashboard.html" %}
 {% load static %}
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NUAM - Administración</title>
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
-</head>
-<body>
 
-<div class="app">
-  <aside class="sidebar">
-    <div class="logo">NUAM - Mantenedor</div>
-    <nav class="nav">
-      <a href="{% url 'dashboard' %}">🏠 Panel</a>
-      <a href="{% url 'gestion' %}">🧾 Gestión de calificaciones</a>
-      <a href="{% url 'carga' %}">📂 Carga masiva</a>
-      <a href="{% url 'busqueda' %}">🔎 Consultas avanzadas</a>
-      <a href="{% url 'adminpanel' %}" class="active">⚙️ Administración</a>
-    </nav>
-    <div class="user-info">Usuario: <strong>Admin</strong></div>
-  </aside>
+{% block title %}Administración{% endblock %}
 
-  <main class="main">
-    <header class="header">
-      <input class="search" placeholder="Buscar en administración..." />
-      <div class="header-right">
-        <span class="workspace">Espacio de trabajo</span>
-        <div class="avatar"></div>
-      </div>
-    </header>
+{% block extra_css %}
+<style>
 
-    <section class="content">
+/* ======== ESTILOS EXCLUSIVOS PARA ADMIN.HTML ========= */
+/* Sin interferir con el resto del proyecto */
+
+.page-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* Paneles */
+.panel {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.mb {
+    margin-bottom: 25px;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* Tablas */
+.table-container {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.table thead {
+    background: #003366;
+    color: #fff;
+}
+
+.table th, 
+.table td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+.table tbody tr:hover {
+    background: #f2f6ff;
+}
+
+/* Formularios */
+.form-row {
+    display: flex;
+    gap: 20px;
+}
+
+.form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+/* Botones */
+.btn-primary {
+    background: #004aad;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-primary:hover {
+    background: #003080;
+}
+
+.btn.ghost {
+    background: transparent;
+    border: 1px solid #004aad;
+    color: #004aad;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn.ghost:hover {
+    background: #004aad;
+    color: white;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-container">
+
+  <h1>Administración</h1>
+  <p class="text-muted small">Gestión de usuarios y parámetros del sistema</p>
+
+  <!-- USUARIOS -->
+  <div class="panel mb">
+    <div class="panel-header">
       <div>
+        <strong>Administración de Usuarios</strong>
+        <div class="text-muted small">Gestión de roles y accesos</div>
+      </div>
+      <button class="btn-primary">Nuevo usuario</button>
+    </div>
 
-        <!-- Panel: Usuarios -->
-        <div class="panel mb">
-          <div class="panel-header">
-            <div>
-              <strong>Administración de Usuarios</strong>
-              <div class="text-muted small">Gestión de roles, accesos y estados</div>
-            </div>
-            <button class="btn primary">Nuevo usuario</button>
-          </div>
+    <div class="table-container">
+      <table class="table mt">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Último acceso</th>
+            <th></th>
+          </tr>
+        </thead>
 
-          <table class="table mt">
-            <thead>
-              <tr>
-                <th>Usuario</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <th>Último acceso</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>admin</td>
-                <td>Administrador</td>
-                <td>Activo</td>
-                <td>2025-10-13 14:22</td>
-                <td><button class="btn ghost">Editar</button></td>
-              </tr>
-              <tr>
-                <td>analista1</td>
-                <td>Analista</td>
-                <td>Activo</td>
-                <td>2025-10-15 09:11</td>
-                <td><button class="btn ghost">Editar</button></td>
-              </tr>
-              <tr>
-                <td>lectura1</td>
-                <td>Lector</td>
-                <td class="text-muted">Suspendido</td>
-                <td>2025-09-30 17:41</td>
-                <td><button class="btn ghost">Editar</button></td>
-              </tr>
-            </tbody>
-          </table>
+        <tbody>
+          <tr>
+            <td>admin</td>
+            <td>Administrador</td>
+            <td>Activo</td>
+            <td>2025-10-13 14:22</td>
+            <td><button class="btn ghost">Editar</button></td>
+          </tr>
+
+          <tr>
+            <td>analista1</td>
+            <td>Analista</td>
+            <td>Activo</td>
+            <td>2025-10-15 09:11</td>
+            <td><button class="btn ghost">Editar</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PARÁMETROS -->
+  <div class="panel mb">
+    <div class="panel-header">
+      <div>
+        <strong>Parámetros del Sistema</strong>
+        <div class="text-muted small">Configuraciones generales</div>
+      </div>
+      <button class="btn-primary">Guardar cambios</button>
+    </div>
+
+    <form class="mt">
+
+      <div class="form-row mb">
+        <div class="form-group">
+          <label>Nombre del sistema</label>
+          <input type="text" value="NUAM Mantenedor">
         </div>
 
-        <!-- Panel: Parámetros del sistema -->
-        <div class="panel mb">
-          <div class="panel-header">
-            <div>
-              <strong>Parámetros del Sistema</strong>
-              <div class="text-muted small">Configuraciones generales del mantenedor</div>
-            </div>
-            <button class="btn primary">Guardar cambios</button>
-          </div>
-
-          <form class="mt">
-            <div class="form-row mb">
-              <div>
-                <label>Nombre del sistema</label>
-                <input type="text" value="NUAM Mantenedor" />
-              </div>
-              <div>
-                <label>Ambiente</label>
-                <select>
-                  <option>Producción</option>
-                  <option>QA</option>
-                  <option>Desarrollo</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-row mb">
-              <div>
-                <label>Retención de logs (días)</label>
-                <input type="number" value="30" />
-              </div>
-              <div>
-                <label>Permitir cargas parciales</label>
-                <select>
-                  <option>Sí</option>
-                  <option>No</option>
-                </select>
-              </div>
-            </div>
-          </form>
+        <div class="form-group">
+          <label>Ambiente</label>
+          <select>
+            <option>Producción</option>
+            <option>QA</option>
+            <option>Desarrollo</option>
+          </select>
         </div>
-
-        <!-- Panel: Auditoría -->
-        <div class="panel">
-          <div class="panel-header">
-            <div>
-              <strong>Auditoría del Sistema</strong>
-              <div class="text-muted small">Últimas acciones realizadas</div>
-            </div>
-            <button class="btn ghost">Exportar</button>
-          </div>
-
-          <table class="table mt">
-            <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Usuario</th>
-              <th>Acción</th>
-              <th>Descripción</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-              <td>2025-10-15</td>
-              <td>admin</td>
-              <td>Actualizó parámetros</td>
-              <td>Cambio en retención de logs</td>
-            </tr>
-            <tr>
-              <td>2025-10-14</td>
-              <td>analista1</td>
-              <td>Editó usuario</td>
-              <td>Se actualizó rol de lector1</td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-
       </div>
 
-      <aside>
-        <div class="panel">
-          <strong>Opciones Rápidas</strong>
-          <ul class="text-muted small">
-            <li>Crear usuario</li>
-            <li>Revisar logs</li>
-            <li>Configurar ambiente</li>
-          </ul>
+      <div class="form-row mb">
+        <div class="form-group">
+          <label>Retención de logs (días)</label>
+          <input type="number" value="30">
         </div>
-      </aside>
 
-    </section>
+        <div class="form-group">
+          <label>Permitir cargas parciales</label>
+          <select>
+            <option>Sí</option>
+            <option>No</option>
+          </select>
+        </div>
+      </div>
 
-    <footer class="footer">
-      <small class="text-muted">NUAM · Administración</small>
-    </footer>
-  </main>
+    </form>
+  </div>
+
+  <!-- AUDITORÍA -->
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <strong>Auditoría del Sistema</strong>
+        <div class="text-muted small">Últimas acciones realizadas</div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="table mt">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Acción</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>2025-10-15</td>
+            <td>admin</td>
+            <td>Actualizó parámetros</td>
+            <td>Cambio en retención de logs</td>
+          </tr>
+
+          <tr>
+            <td>2025-10-14</td>
+            <td>analista1</td>
+            <td>Editó usuario</td>
+            <td>Actualización rol lector1</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
 </div>
 
-</body>
-</html>
+{% endblock %}
+

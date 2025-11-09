@@ -68,14 +68,18 @@ def logout_view(request):
 def dashboard_view(request):
     return render(request, 'api/Dashboard.html')
 
+
 def gestion_view(request):
     return render(request, 'api/Gestion.html')
+
 
 def carga_view(request):
     return render(request, 'api/Carga.html')
 
+
 def busqueda_view(request):
     return render(request, 'api/Busqueda.html')
+
 
 def admin_view(request):
     return render(request, 'api/Admin.html')
@@ -85,16 +89,17 @@ def admin_view(request):
 # URLS PRINCIPALES
 # =============================
 urlpatterns = [
+    # Panel de administración
     path('admin/', admin.site.urls),
 
-    # API REST
+    # API REST (y vistas HTML del CRUD)
     path('api/', include('api.urls')),
 
-    # JWT AUTH
+    # JWT AUTH (token)
     path('api/auth/login/', TokenObtainPairView.as_view(), name='jwt_login'),
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='jwt_refresh'),
 
-    # FRONTEND
+    # VISTAS FRONTEND PRINCIPALES
     path('', login_view, name='login'),
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
@@ -106,5 +111,6 @@ urlpatterns = [
     path('adminpanel/', admin_view, name='adminpanel'),
 ]
 
+# Archivos estáticos en modo DEBUG
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

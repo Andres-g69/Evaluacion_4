@@ -1,0 +1,30 @@
+{% extends 'api/Dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-content">
+    <h1>Eliminar Calificación</h1>
+
+    <div style="background:white; max-width: 500px; padding:20px;
+                border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+
+        <p style="font-size:1.1rem; margin-bottom:20px;">
+            ¿Estás seguro que deseas eliminar la calificación de <strong>{{ calificacion.rut }}</strong>?
+        </p>
+
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn" 
+                    style="width:100%; background:#e74c3c; margin-bottom:10px;">
+                Sí, eliminar
+            </button>
+
+            <a href="{% url 'calificacion_list_view' %}" class="btn" 
+               style="width:100%; background:#777;">
+                Cancelar
+            </a>
+        </form>
+
+    </div>
+</div>
+{% endblock %}

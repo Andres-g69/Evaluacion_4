@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}NUAM{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+  <div class="dashboard-container">
+
+    <!-- NAVBAR -->
+    <header class="navbar">
+      <div class="navbar-logo">
+        <img src="{% static 'css/logo_nuam.png' %}" alt="NUAM Logo">
+      </div>
+
+      <nav class="navbar-links">
+        <a href="{% url 'dashboard' %}">Inicio</a>
+        <a href="{% url 'gestion' %}">Gestión</a>
+        <a href="{% url 'calificacion_list_view' %}">Calificaciones</a>
+        <a href="{% url 'carga' %}">Carga</a>
+        <a href="{% url 'busqueda' %}">Búsqueda</a>
+        <a href="{% url 'adminpanel' %}">Administración</a>
+      </nav>
+
+      <div class="navbar-user">
+        <span>👤 {{ user.username }}</span>
+        <a href="{% url 'logout' %}" class="logout-btn">Cerrar sesión</a>
+      </div>
+    </header>
+
+    <!-- CONTENIDO DINÁMICO -->
+    <main class="dashboard-content">
+      {% block content %}
+      {% endblock %}
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="dashboard-footer">
+      <p>© 2025 NUAM. Todos los derechos reservados.</p>
+    </footer>
+
+  </div>
+</body>
+</html>

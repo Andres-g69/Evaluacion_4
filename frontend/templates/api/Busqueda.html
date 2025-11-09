@@ -1,126 +1,146 @@
+{% extends "api/BaseDashboard.html" %}
 {% load static %}
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NUAM - Búsqueda Avanzada</title>
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
-</head>
-<body>
 
-<div class="app">
-  <aside class="sidebar">
-    <div class="logo">NUAM - Mantenedor</div>
-    <nav class="nav">
-      <a href="{% url 'dashboard' %}">🏠 Panel</a>
-      <a href="{% url 'gestion' %}">🧾 Gestión de calificaciones</a>
-      <a href="{% url 'carga' %}">📂 Carga masiva</a>
-      <a href="{% url 'busqueda' %}" class="active">🔎 Consultas avanzadas</a>
-      <a href="{% url 'adminpanel' %}">⚙️ Administración</a>
-    </nav>
-    <div class="user-info">Usuario: <strong>Analista</strong></div>
-  </aside>
+{% block title %}Búsqueda Avanzada{% endblock %}
 
-  <main class="main">
-    <header class="header">
-      <input class="search" placeholder="Búsqueda rápida..." />
-      <div class="header-right">
-        <span class="workspace">Espacio de trabajo</span>
-        <div class="avatar"></div>
-      </div>
-    </header>
+{% block content %}
 
-    <section class="content">
-      <div>
-        <div class="panel mb">
-          <div class="panel-header">
-            <div>
-              <strong>Búsqueda Avanzada</strong>
-              <div class="text-muted small">Filtra calificaciones, instrumentos, RUT y más</div>
-            </div>
-            <button class="btn primary">Buscar</button>
-          </div>
+<div class="dashboard-content">
 
-          <form>
-            <div class="form-row mb">
-              <div>
-                <label>RUT</label>
-                <input type="text" placeholder="11.111.111-1" />
-              </div>
-              <div>
-                <label>Instrumento</label>
-                <input type="text" placeholder="Nombre del instrumento" />
-              </div>
-            </div>
+    <h1>Búsqueda Avanzada</h1>
+    <p class="text-muted small">Filtra calificaciones, instrumentos, RUT y más</p>
 
-            <div class="form-row mb">
-              <div>
-                <label>Tipo</label>
-                <select>
-                  <option value="">Todos</option>
-                  <option>DJ1948</option>
-                  <option>Factor</option>
-                  <option>Manual</option>
-                </select>
-              </div>
+    <!-- CARD DE FILTROS -->
+    <div class="card" style="max-width: 900px; width: 100%; text-align: left;">
 
-              <div>
-                <label>Estado</label>
-                <select>
-                  <option value="">Todos</option>
-                  <option>Vigente</option>
-                  <option>Eliminada</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-row mb">
-              <div>
-                <label>Fecha desde</label>
-                <input type="date" />
-              </div>
-              <div>
-                <label>Fecha hasta</label>
-                <input type="date" />
-              </div>
-            </div>
-          </form>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0;">Filtros de búsqueda</h3>
+            <button class="btn" style="background:#004aad; color:white;">Buscar</button>
         </div>
 
-        <div class="panel">
-          <div class="panel-header">
-            <div>
-              <strong>Resultados</strong>
-              <div class="text-muted small">Mostrando coincidencias</div>
+        <form>
+
+            <div class="form-row" style="margin-bottom: 18px;">
+                <div class="form-group" style="width: 100%;">
+                    <label>RUT</label>
+                    <input type="text" placeholder="11.111.111-1" style="margin-top: 5px;">
+                </div>
+
+                <div class="form-group" style="width: 100%;">
+                    <label>Instrumento</label>
+                    <input type="text" placeholder="Nombre del instrumento" style="margin-top: 5px;">
+                </div>
             </div>
-            <button class="btn ghost">Exportar</button>
-          </div>
 
-          <table class="table mt">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Instrumento</th>
-                <th>RUT</th>
-                <th>Tipo</th>
-                <th>Monto</th>
-                <th>Fecha</th>
-                <th>Estado</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1441</td>
-                <td>Acciones Z</td>
-                <td>12.345.678-5</td>
-                <td>DJ1948</td>
-                <td>$500.000</td>
-                <td>2025-10-14</td>
-                <td>Vigente</td>
-                <td><a class="btn ghost" href="{% url 'gestion' %}">Ver</a></td>
-              </tr>
+            <div class="form-row" style="margin-bottom: 18px;">
+                <div class="form-group" style="width: 100%;">
+                    <label>Tipo</label>
+                    <select style="margin-top: 5px;">
+                        <option value="">Todos</option>
+                        <option>DJ1948</option>
+                        <option>Factor</option>
+                        <option>Manual</option>
+                    </select>
+                </div>
 
-              <tr>
-                <td>1422</
+                <div class="form-group" style="width: 100%;">
+                    <label>Estado</label>
+                    <select style="margin-top: 5px;">
+                        <option value="">Todos</option>
+                        <option>Vigente</option>
+                        <option>Eliminada</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom: 10px;">
+                <div class="form-group" style="width: 100%;">
+                    <label>Fecha desde</label>
+                    <input type="date" style="margin-top: 5px;">
+                </div>
+
+                <div class="form-group" style="width: 100%;">
+                    <label>Fecha hasta</label>
+                    <input type="date" style="margin-top: 5px;">
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- CARD RESULTADOS -->
+    <div class="card" style="max-width: 1000px; width: 100%; text-align: left; margin-top: 25px;">
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="margin-bottom: 5px;">Resultados</h3>
+                <p class="text-muted small" style="margin: 0;">Mostrando coincidencias</p>
+            </div>
+
+            <button class="btn ghost" style="border:1px solid #004aad; color:#004aad;">
+                Exportar
+            </button>
+        </div>
+
+        <div style="overflow-x: auto; margin-top: 20px;">
+
+            <table class="table">
+
+                <thead>
+                    <tr style="background:#003366; color:white; text-align:left;">
+                        <th style="padding: 10px;">ID</th>
+                        <th style="padding: 10px;">Instrumento</th>
+                        <th style="padding: 10px;">RUT</th>
+                        <th style="padding: 10px;">Tipo</th>
+                        <th style="padding: 10px;">Monto</th>
+                        <th style="padding: 10px;">Fecha</th>
+                        <th style="padding: 10px;">Estado</th>
+                        <th style="padding: 10px;"></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 10px;">1441</td>
+                        <td style="padding: 10px;">Acciones Z</td>
+                        <td style="padding: 10px;">12.345.678-5</td>
+                        <td style="padding: 10px;">DJ1948</td>
+                        <td style="padding: 10px;">$500.000</td>
+                        <td style="padding: 10px;">2025-10-14</td>
+                        <td style="padding: 10px;">Vigente</td>
+                        <td style="padding: 10px;">
+                            <a class="btn ghost"
+                               href="{% url 'gestion' %}"
+                               style="border:1px solid #003366; color:#003366; padding:4px 10px; border-radius:6px;">
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 10px;">1422</td>
+                        <td style="padding: 10px;">Bonos XP-22</td>
+                        <td style="padding: 10px;">10.111.222-3</td>
+                        <td style="padding: 10px;">Factor</td>
+                        <td style="padding: 10px;">$800.000</td>
+                        <td style="padding: 10px;">2025-10-12</td>
+                        <td style="padding: 10px;">Vigente</td>
+                        <td style="padding: 10px;">
+                            <a class="btn ghost"
+                               href="{% url 'gestion' %}"
+                               style="border:1px solid #003366; color:#003366; padding:4px 10px; border-radius:6px;">
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,126 +1,97 @@
+{% extends "api/BaseDashboard.html" %}
 {% load static %}
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NUAM - Gestión de Calificaciones</title>
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
-</head>
-<body>
 
-  <div class="app">
-    <aside class="sidebar">
-      <div class="logo">NUAM - Mantenedor</div>
-      <nav class="nav">
-        <a href="{% url 'dashboard' %}">🏠 Panel</a>
-        <a href="{% url 'gestion' %}" class="active">🧾 Gestión de calificaciones</a>
-        <a href="{% url 'carga' %}">📂 Carga masiva</a>
-        <a href="{% url 'busqueda' %}">🔎 Consultas avanzadas</a>
-        <a href="{% url 'adminpanel' %}">⚙️ Administración</a>
-      </nav>
-      <div class="user-info">Usuario: <strong>Analista</strong></div>
-    </aside>
+{% block title %}NUAM - Gestión de Calificaciones{% endblock %}
 
-    <main class="main">
-      <header class="header">
-        <input class="search" placeholder="Buscar registros..." />
-        <div class="header-right">
-          <span class="workspace">Espacio de trabajo</span>
-          <div class="avatar"></div>
-        </div>
-      </header>
+{% block content %}
 
-      <section class="content">
-        <div>
-          <div class="panel mb">
-            <div class="panel-header">
-              <div>
-                <strong>Gestión de Calificaciones</strong>
-                <div class="text-muted small">Crear, editar o eliminar calificaciones</div>
-              </div>
-              <button class="btn primary">Guardar</button>
+<div class="dashboard-content">
+
+    <h1>Gestión de Calificaciones</h1>
+    <p class="text-muted small">Crear, editar o eliminar calificaciones</p>
+
+    <!-- FORMULARIO -->
+    <div class="card" style="max-width: 900px; width: 100%; text-align: left;">
+
+        <h3 style="margin-bottom: 15px;">Formulario</h3>
+
+        <form>
+
+            <div class="form-row" style="display: flex; gap: 20px; margin-bottom: 20px;">
+                <div style="flex: 1;">
+                    <label>Instrumento</label>
+                    <input type="text" placeholder="Ej: Bonos ABC" style="width: 100%; padding: 10px;">
+                </div>
+
+                <div style="flex: 1;">
+                    <label>Tipo</label>
+                    <select style="width: 100%; padding: 10px;">
+                        <option>DJ1948</option>
+                        <option>Factor</option>
+                        <option>Manual</option>
+                    </select>
+                </div>
             </div>
 
-            <form>
-              <div class="form-row mb">
-                <div>
-                  <label>Instrumento</label>
-                  <input type="text" placeholder="Ej: Bonos ABC" />
+            <div class="form-row" style="display: flex; gap: 20px; margin-bottom: 20px;">
+                <div style="flex: 1;">
+                    <label>Monto</label>
+                    <input type="text" placeholder="Ej: 1200000" style="width: 100%; padding: 10px;">
                 </div>
-                <div>
-                  <label>Tipo</label>
-                  <select>
-                    <option>DJ1948</option>
-                    <option>Factor</option>
-                    <option>Manual</option>
-                  </select>
-                </div>
-              </div>
 
-              <div class="form-row mb">
-                <div>
-                  <label>Monto</label>
-                  <input type="text" placeholder="Ej: 1200000" />
+                <div style="flex: 1;">
+                    <label>Fecha</label>
+                    <input type="date" style="width: 100%; padding: 10px;">
                 </div>
-                <div>
-                  <label>Fecha</label>
-                  <input type="date" />
-                </div>
-              </div>
+            </div>
 
-              <div class="mb">
+            <div style="margin-bottom: 20px;">
                 <label>Comentario</label>
-                <textarea rows="3"></textarea>
-              </div>
-            </form>
-          </div>
+                <textarea rows="3" style="width: 100%; padding: 10px;"></textarea>
+            </div>
 
-          <div class="panel">
-            <strong>Historial de Cambios</strong>
-            <div class="text-muted small">Últimas modificaciones realizadas</div>
+            <button class="btn" style="background:#004aad; color:white; padding:10px 18px; border-radius:6px;">
+                Guardar
+            </button>
 
-            <table class="table mt">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Usuario</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>2025-10-15</td>
-                  <td>analista1</td>
-                  <td>Modificó</td>
-                </tr>
-                <tr>
-                  <td>2025-10-14</td>
-                  <td>admin</td>
-                  <td>Creó</td>
-                </tr>
-              </tbody>
+        </form>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="card" style="max-width: 900px; width: 100%; margin-top: 25px; text-align: left;">
+
+        <h3 style="margin-bottom: 10px;">Historial de Cambios</h3>
+        <p class="text-muted small">Últimas modificaciones realizadas</p>
+
+        <div style="overflow-x: auto; margin-top: 15px;">
+
+            <table class="table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background:#003366; color:white; text-align:left;">
+                        <th style="padding: 10px;">Fecha</th>
+                        <th style="padding: 10px;">Usuario</th>
+                        <th style="padding: 10px;">Acción</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 10px;">2025-10-15</td>
+                        <td style="padding: 10px;">analista1</td>
+                        <td style="padding: 10px;">Modificó</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 10px;">2025-10-14</td>
+                        <td style="padding: 10px;">admin</td>
+                        <td style="padding: 10px;">Creó</td>
+                    </tr>
+                </tbody>
             </table>
-          </div>
+
         </div>
 
-        <aside>
-          <div class="panel">
-            <strong>Validaciones</strong>
-            <ul class="text-muted small">
-              <li>RUT debe estar en formato válido</li>
-              <li>Monto numérico mayor a 0</li>
-              <li>Fecha obligatoria</li>
-            </ul>
-          </div>
-        </aside>
-      </section>
+    </div>
 
-      <footer class="footer">
-        <small class="text-muted">NUAM · Gestión de Calificaciones</small>
-      </footer>
-    </main>
-  </div>
+</div>
 
-</body>
-</html>
+{% endblock %}
