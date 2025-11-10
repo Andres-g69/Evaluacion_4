@@ -17,4 +17,3 @@ FLUSH PRIVILEGES;
 -- 5. Seleccionar base de datos
 USE nuam;
 
--- (Opcional) puedes agregar tablas manuales aquí si algún día lo necesitas.
