@@ -68,10 +68,8 @@ def logout_view(request):
 def dashboard_view(request):
     return render(request, 'api/Dashboard.html')
 
-
-def gestion_view(request):
-    return render(request, 'api/Gestion.html')
-
+def calificaciones_view(request):
+    return render(request, 'calificaciones/listado.html')
 
 def carga_view(request):
     return render(request, 'api/Carga.html')
@@ -105,7 +103,7 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
     path('dashboard/', dashboard_view, name='dashboard'),
-    path('gestion/', gestion_view, name='gestion'),
+    path('calificaciones/', calificaciones_view, name='calificaciones'),
     path('carga/', carga_view, name='carga'),
     path('busqueda/', busqueda_view, name='busqueda'),
     path('adminpanel/', admin_view, name='adminpanel'),

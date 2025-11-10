@@ -16,20 +16,14 @@ router.register(r'errores', views.CargaErrorViewSet, basename='errores')
 router.register(r'registros', views.CargaRegistroViewSet, basename='registros')
 router.register(r'auditoria', views.AuditoriaViewSet, basename='auditoria')
 
-# =============================
-# URLS DE API + CRUD HTML
-# =============================
-# =============================
-# URLS DE API + CRUD HTML
-# =============================
+
+
 urlpatterns = [
-    # CRUD HTML
-    path('calificaciones/html/', views.calificacion_list_view, name='calificacion_list_view'),
-    path('calificaciones/html/nueva/', views.calificacion_create_view, name='calificacion_create_view'),
-    path('calificaciones/html/<int:id>/editar/', views.calificacion_update_view, name='calificacion_update_view'),
-    path('calificaciones/html/<int:id>/eliminar/', views.calificacion_delete_view, name='calificacion_delete_view'),
-
-        # API REST Framework
+    path('calificaciones/', views.calificacion_list_view, name='calificacion_list_view'),
+    path('calificaciones/nueva/', views.calificacion_create_view, name='calificacion_create_view'),
+    path('calificaciones/<int:id>/editar/', views.calificacion_update_view, name='calificacion_update_view'),      
+    path('calificaciones/<int:id>/eliminar/', views.calificacion_delete_view, name='calificacion_delete_view'),
+    path('busqueda/', views.calificacion_read_view, name='calificacion_read_view'),
     path('', include(router.urls)),
-
 ]
+

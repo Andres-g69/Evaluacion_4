@@ -1,10 +1,17 @@
+import re
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db.models import Q
+from django.contrib.auth.models import User
+
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404
-from django.db.models import Q
 
+# =============================
+# IMPORTS DE MODELOS Y SERIALIZERS
+# =============================
 from .models import (
     UserProfile,
     Instrumento,
@@ -30,39 +37,39 @@ from .serializers import (
     CargaRegistroSerializer,
 )
 
-# =============================
-# USER PROFILE
-# =============================
+from .forms import CalificacionTributariaForm
+
+
+# =====================================================
+#  🔹 API REST FRAMEWORK VIEWSETS
+# =====================================================
+
+# --- USUARIOS / PERFILES ---
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.select_related("user").all()
     serializer_class = UserProfileSerializer
 
 
-# =============================
-# INSTRUMENTOS
-# =============================
+# --- INSTRUMENTOS ---
 class InstrumentoViewSet(viewsets.ModelViewSet):
     queryset = Instrumento.objects.all()
     serializer_class = InstrumentoSerializer
 
 
-# =============================
-# FACTORES DE CONVERSIÓN
-# =============================
+# --- FACTORES DE CONVERSIÓN ---
 class FactorConversionViewSet(viewsets.ModelViewSet):
     queryset = FactorConversion.objects.all()
     serializer_class = FactorConversionSerializer
 
 
-# =============================
-# CALIFICACIONES TRIBUTARIAS
-# =============================
+# --- CALIFICACIONES TRIBUTARIAS ---
 class CalificacionTributariaViewSet(viewsets.ModelViewSet):
     queryset = CalificacionTributaria.objects.select_related(
         "instrumento", "factor", "creado_por", "archivo_origen"
     ).all().order_by("-creado_en")
     serializer_class = CalificacionTributariaSerializer
 
+    # Crear historial automáticamente
     def perform_create(self, serializer):
         obj = serializer.save(creado_por=self.request.user)
         HistorialCalificacion.objects.create(
@@ -90,9 +97,7 @@ class CalificacionTributariaViewSet(viewsets.ModelViewSet):
         )
         instance.delete()
 
-    # =============================
-    # BUSQUEDA AVANZADA
-    # =============================
+    # --- BUSQUEDA ---
     @action(detail=False, methods=["get"], url_path="buscar")
     def buscar(self, request):
         rut = request.GET.get("rut")
@@ -119,17 +124,13 @@ class CalificacionTributariaViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-# =============================
-# HISTORIAL CALIFICACIONES
-# =============================
+# --- HISTORIAL CALIFICACIONES ---
 class HistorialCalificacionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = HistorialCalificacion.objects.select_related("usuario", "calificacion").all()
     serializer_class = HistorialCalificacionSerializer
 
 
-# =============================
-# ARCHIVO DE CARGA + PROCESAMIENTO
-# =============================
+# --- ARCHIVOS DE CARGA ---
 class ArchivoCargaViewSet(viewsets.ModelViewSet):
     queryset = ArchivoCarga.objects.all().order_by("-fecha_carga")
     serializer_class = ArchivoCargaSerializer
@@ -149,8 +150,8 @@ class ArchivoCargaViewSet(viewsets.ModelViewSet):
             estado="Procesando"
         )
 
-        # Procesamiento real se implementará luego
         try:
+            # Aquí podrías implementar la lógica real de procesamiento
             carga.estado = "Completado"
             carga.mensaje = "Archivo procesado correctamente"
             carga.save()
@@ -163,43 +164,36 @@ class ArchivoCargaViewSet(viewsets.ModelViewSet):
         return Response(ArchivoCargaSerializer(carga).data)
 
 
-# =============================
-# ERRORES DE CARGA
-# =============================
+# --- ERRORES DE CARGA ---
 class CargaErrorViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CargaError.objects.select_related("archivo").all()
     serializer_class = CargaErrorSerializer
 
 
-# =============================
-# REGISTROS DE CARGA
-# =============================
+# --- REGISTROS DE CARGA ---
 class CargaRegistroViewSet(viewsets.ModelViewSet):
     queryset = CargaRegistro.objects.all().order_by("-fecha_registro")
     serializer_class = CargaRegistroSerializer
 
 
-# =============================
-# AUDITORIA GENERAL
-# =============================
+# --- AUDITORÍA ---
 class AuditoriaViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Auditoria.objects.select_related("usuario").all().order_by("-fecha")
     serializer_class = AuditoriaSerializer
 
-# =============================
-# VISTAS HTML CRUD (HTML templates)
-# =============================
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from .forms import CalificacionTributariaForm
 
+# =====================================================
+#  🔹 VISTAS HTML (CRUD y búsquedas)
+# =====================================================
+
+# 📄 LISTAR
 @login_required
 def calificacion_list_view(request):
     calificaciones = CalificacionTributaria.objects.select_related("instrumento", "factor").all()
-    return render(request, 'calificaciones/listado.html', {
-        'calificaciones': calificaciones
-    })
+    return render(request, 'calificaciones/listado.html', {'calificaciones': calificaciones})
 
+
+# ➕ CREAR
 @login_required
 def calificacion_create_view(request):
     if request.method == 'POST':
@@ -208,14 +202,25 @@ def calificacion_create_view(request):
             obj = form.save(commit=False)
             obj.creado_por = request.user
             obj.save()
+
+            HistorialCalificacion.objects.create(
+                calificacion=obj,
+                usuario=request.user,
+                accion="Creó",
+                descripcion="Creación manual desde el panel HTML"
+            )
+
+            messages.success(request, "✅ Calificación creada correctamente.")
             return redirect('calificacion_list_view')
+        else:
+            messages.error(request, "❌ Error al crear la calificación. Verifique los datos.")
     else:
         form = CalificacionTributariaForm()
 
-    return render(request, 'calificaciones/formulario.html', {
-        'form': form
-    })
+    return render(request, 'calificaciones/formulario.html', {'form': form})
 
+
+# ✏️ EDITAR
 @login_required
 def calificacion_update_view(request, id):
     calificacion = get_object_or_404(CalificacionTributaria, id=id)
@@ -224,7 +229,18 @@ def calificacion_update_view(request, id):
         form = CalificacionTributariaForm(request.POST, instance=calificacion)
         if form.is_valid():
             form.save()
+
+            HistorialCalificacion.objects.create(
+                calificacion=calificacion,
+                usuario=request.user,
+                accion="Modificó",
+                descripcion="Actualización manual desde el panel HTML"
+            )
+
+            messages.success(request, "✏️ Calificación actualizada correctamente.")
             return redirect('calificacion_list_view')
+        else:
+            messages.error(request, "❌ Error al actualizar la calificación.")
     else:
         form = CalificacionTributariaForm(instance=calificacion)
 
@@ -233,14 +249,41 @@ def calificacion_update_view(request, id):
         'calificacion': calificacion
     })
 
+
+# 🗑️ ELIMINAR
 @login_required
 def calificacion_delete_view(request, id):
     calificacion = get_object_or_404(CalificacionTributaria, id=id)
 
     if request.method == 'POST':
+        HistorialCalificacion.objects.create(
+            calificacion=calificacion,
+            usuario=request.user,
+            accion="Eliminó",
+            descripcion="Eliminación manual desde el panel HTML"
+        )
         calificacion.delete()
+        messages.success(request, "🗑️ Calificación eliminada correctamente.")
         return redirect('calificacion_list_view')
 
-    return render(request, 'calificaciones/eliminar.html', {
-        'calificacion': calificacion
-    })
+    return render(request, 'calificaciones/confirmar_eliminacion.html', {'calificacion': calificacion})
+
+
+# 🔍 BUSCAR (READ simplificado)
+@login_required
+def calificacion_read_view(request):
+    rut = request.GET.get('rut', '').strip()
+    calificaciones = CalificacionTributaria.objects.all()
+
+    if rut:
+        rut_limpio = re.sub(r'[\.\-]', '', rut)
+        calificaciones = calificaciones.filter(rut__iregex=r'{}|{}'.format(rut, rut_limpio))
+
+    return render(request, 'api/busqueda.html', {'calificaciones': calificaciones})
+
+
+# 📤 CARGA MASIVA HTML
+@login_required
+def carga_masiva_view(request):
+    cargas = ArchivoCarga.objects.all().order_by('-fecha_carga')
+    return render(request, 'api/Carga.html', {'cargas': cargas})
