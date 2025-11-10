@@ -2,6 +2,7 @@
 
 Sigue los pasos a continuación para instalar y ejecutar el proyecto NUAM en un entorno Linux.
 
+
 1️⃣ Clonar el repositorio
 
 Abre una terminal y clona el proyecto desde GitHub:
@@ -12,6 +13,7 @@ Abre una terminal y clona el proyecto desde GitHub:
 Luego entra al directorio del proyecto:
 
 - cd NUAM
+
 
 2️⃣ Crear un entorno virtual (recomendado)
 
@@ -27,18 +29,21 @@ Activa el entorno virtual:
 
 💡 Si al intentar usar python3 no funciona, puedes probar con python.
 
+
 3️⃣ Instalar las dependencias
 
 Instala todas las librerías necesarias desde el archivo requirements.txt:
 
 - pip install -r requirements.txt
 
+
 4️⃣ Aplicar las migraciones de la base de datos
 
 Ejecuta los siguientes comandos para crear las tablas necesarias en la base de datos:
 
-python manage.py makemigrations
-python manage.py migrate
+- python manage.py makemigrations
+- python manage.py migrate
+
 
 5️⃣ Crear un superusuario (opcional, para administración)
 
@@ -48,6 +53,7 @@ Si deseas acceder al panel de administración de Django, crea un superusuario:
 
 
 Sigue las instrucciones en pantalla (nombre, correo y contraseña).
+
 
 6️⃣ Ejecutar el servidor
 
@@ -59,6 +65,7 @@ Inicia el servidor de desarrollo de Django:
 Por defecto, el servidor estará disponible en:
 
 👉 http://127.0.0.1:8000/
+
 
 7️⃣ Acceder al sistema
 
@@ -72,6 +79,7 @@ Una vez iniciado el servidor, puedes acceder a las siguientes rutas principales:
 
 Ejemplo:
 http://127.0.0.1:8000/login/
+
 
 8️⃣ Detener el servidor
 
