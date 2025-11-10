@@ -1,49 +1,78 @@
-INSTRUCCIONES DEL FUNCIONAMIENTO DEL SISTEMA NUAM
-Bastian Cabello y Andrés González
+🛠️ Instalación del Sistema NUAM en Linux
 
+Sigue los pasos a continuación para instalar y ejecutar el proyecto NUAM en un entorno Linux.
 
-Instalacion de programa
-1) Tener instalado GIT
-2)  clonar el repositorio en carpeta deseada:
+1️⃣ Clonar el repositorio
+
+Abre una terminal y clona el proyecto desde GitHub:
+
 - git clone https://github.com/Andres-g69/NUAM.git
 
-3) Entrar en el proyecto y crear entorno virtual y activarlo:
+
+Luego entra al directorio del proyecto:
+
 - cd NUAM
-- python3 -m venv env
-- source env/bin/activate
-4) Instalar requerimientos del sistema:
+
+2️⃣ Crear un entorno virtual (recomendado)
+
+Crea un entorno virtual de Python para aislar las dependencias del proyecto:
+
+- python3 -m venv environment
+
+
+Activa el entorno virtual:
+
+- source environment/bin/activate
+
+
+💡 Si al intentar usar python3 no funciona, puedes probar con python.
+
+3️⃣ Instalar las dependencias
+
+Instala todas las librerías necesarias desde el archivo requirements.txt:
+
 - pip install -r requirements.txt
 
+4️⃣ Aplicar las migraciones de la base de datos
+
+Ejecuta los siguientes comandos para crear las tablas necesarias en la base de datos:
+
+python manage.py makemigrations
+python manage.py migrate
+
+5️⃣ Crear un superusuario (opcional, para administración)
+
+Si deseas acceder al panel de administración de Django, crea un superusuario:
+
+- python manage.py createsuperuser
 
 
-Instrucciones para configurar el proyecto NUAM (con MySQL)
+Sigue las instrucciones en pantalla (nombre, correo y contraseña).
 
-1) Instalacion de MYSQL
+6️⃣ Ejecutar el servidor
 
-- Instalar MySQL Server (se recomienda la versión 8.0, aunque otras versiones también funcionan).
-- Instalar MySQL Workbench (recordar la contraseña del usuario root durante la instalación).
+Inicia el servidor de desarrollo de Django:
 
-2) Activacion Proyecto
+- python manage.py runserver
 
-- Clonar el repositorio del proyecto desde GitHub.
-- Crear y activar el entorno virtual.
-- Instalar las dependencias: pip install -r requirements.txt
 
-3) Creacion de BD
+Por defecto, el servidor estará disponible en:
 
-- Ejecutar el siguiente comando en la terminal (dentro de la carpeta del proyecto): mysql -u root -p < db_setup.sql
-- Esto creará la base de datos nuam, el usuario nuamuser y asignará los permisos necesarios.
+👉 http://127.0.0.1:8000/
 
-4) Aplicar Migraciones
+7️⃣ Acceder al sistema
 
-- Aplicar las migraciones de Django: python manage.py migrate
-- No es necesario ejecutar makemigrations, ya que las migraciones están incluidas en el repositorio.
+Una vez iniciado el servidor, puedes acceder a las siguientes rutas principales:
 
-5) Ejecutar Proyecto:
+- Login: /login/
 
-- Ejecutar el servidor de desarrollo: python manage.py runserver
-- Luego, acceder al proyecto desde el navegador en: http://127.0.0.1:8000/
+- Registro: /register/
 
-6) Visualizar BD:
+- Dashboard principal: /dashboard/
 
-- Abrir MySQL Workbench, conectarse a localhost:3306 con el usuario root, y verificar que la base de datos nuam se haya creado correctamente.
+Ejemplo:
+http://127.0.0.1:8000/login/
+
+8️⃣ Detener el servidor
+
+Para detener el servidor presiona Ctrl + C en la terminal donde se esté ejecutando.
