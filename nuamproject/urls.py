@@ -104,7 +104,6 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('dashboard/', dashboard_view, name='dashboard'),
     path('calificaciones/', calificaciones_view, name='calificaciones'),
-    path('carga/', carga_view, name='carga'),
     path('busqueda/', busqueda_view, name='busqueda'),
     path('adminpanel/', admin_view, name='adminpanel'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

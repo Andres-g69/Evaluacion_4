@@ -27,7 +27,10 @@ urlpatterns = [
     path('calificaciones/<int:id>/eliminar/', views.calificacion_delete_view, name='calificacion_delete_view'),
     path('busqueda/', views.calificacion_read_view, name='calificacion_read_view'),
     path('', include(router.urls)),
-    path('carga/', views.carga_view, name='carga'),
-    path('api/carga/procesar/', views.procesar_archivo, name='archivo-carga-procesar'),
+# api/urls.py
+    path('carga/', views.carga_view, name='carga_dashboard'),
+    path('carga/listado/', views.listado_carga_view, name='listado_carga'),
+    path('carga/procesar/', views.procesar_archivo, name='archivo-carga-procesar'),
+    path('cargas/descargar/<int:archivo_id>/', views.descarga_archivo, name='archivo_descargar'),
 ]
 

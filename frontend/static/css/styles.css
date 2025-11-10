@@ -105,12 +105,20 @@ html, body {
 /* Cards */
 .dashboard-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  justify-items: center;
+  grid-template-columns: repeat(2, 1fr); 
   gap: 25px;
   width: 100%;
-  max-width: 700px; /* 🔹 reduce ancho total para centrar */
+  max-width: 700px;
+  justify-items: center; 
 }
+
+.dashboard-cards a:nth-child(3) {
+  grid-column: 1 / -1;
+  justify-self: center; 
+}
+
+
+
 
 .card {
   background: #fff;

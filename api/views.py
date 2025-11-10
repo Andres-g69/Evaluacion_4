@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.models import User
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse, Http404
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -297,7 +297,13 @@ def carga_view(request):
     cargas = ArchivoCarga.objects.all().order_by('-fecha_carga')
     return render(request, 'api/Carga.html', {'cargas': cargas})
 
+# 🔹 Listado de cargas (nuevo template)
+@login_required
+def listado_carga_view(request):
+    cargas = ArchivoCarga.objects.all().order_by('-fecha_carga')
+    return render(request, 'api/listado_carga.html', {'cargas': cargas})
 
+# 🔹 Procesar archivo vía AJAX
 @api_view(['POST'])
 @login_required
 def procesar_archivo(request):
@@ -316,3 +322,14 @@ def procesar_archivo(request):
 
     serializer = ArchivoCargaSerializer(carga)
     return Response({'success': True, 'carga': serializer.data})
+
+@login_required
+def descarga_archivo(request, archivo_id):
+    carga = get_object_or_404(ArchivoCarga, id=archivo_id)
+    archivo_path = carga.archivo.path
+
+    try:
+        return FileResponse(open(archivo_path, 'rb'), as_attachment=True, filename=os.path.basename(archivo_path))
+    except FileNotFoundError:
+        raise Http404("El archivo no existe")
+

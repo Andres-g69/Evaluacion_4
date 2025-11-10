@@ -52,10 +52,16 @@
                         <td>{{ carga.usuario.username }}</td>
                         <td>{{ carga.fecha_carga|date:"Y-m-d H:i" }}</td>
                         <td>{{ carga.estado }}</td>
+                        <td>
+                            <a class="btn" style="background:#004aad; color:white; padding:5px 10px; border-radius:5px;"
+                            href="{% url 'api:archivo_descargar' carga.id %}">
+                            Descargar
+                            </a>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5">No hay cargas registradas.</td>
+                        <td colspan="6">No hay cargas registradas.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
