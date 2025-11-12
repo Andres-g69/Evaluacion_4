@@ -38,22 +38,48 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 # Instrumento
 class Instrumento(models.Model):
+    # Opciones predefinidas de instrumentos
+    INSTRUMENTO_CHOICES = [
+        ('ACCION', 'Acción'),
+        ('BONO', 'Bono'),
+        ('FONDO_MUTUO', 'Fondo Mutuo'),
+        ('ETF', 'ETF'),
+        ('DERIVADO', 'Derivado'),
+        ('FACTURA', 'Factura'),
+        ('CERTIFICADO_AHORRO', 'Certificado de ahorro'),
+        ('CRYPTO', 'Activo Digital'),
+        ('OTRO', 'Otro'),
+    ]
+
     codigo = models.CharField(max_length=50, unique=True, blank=True, null=True)
-    nombre = models.CharField(max_length=150)
-    tipo = models.CharField(max_length=100)
+    nombre = models.CharField(max_length=150, choices=INSTRUMENTO_CHOICES)
+    tipo = models.CharField(max_length=100, blank=True, null=True)
     inscrito = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.nombre
+        return self.get_nombre_display()  # Muestra el texto legible del choice
 
 
 # Factor de conversión
 class FactorConversion(models.Model):
-    descripcion = models.CharField(max_length=150)
+    # Opciones predefinidas de factores
+    FACTOR_CHOICES = [
+        ('CLP', 'Peso Chileno (CLP)'),
+        ('COP', 'Peso Colombiano (COP)'),
+        ('PEN', 'Nuevo sol Peruano (PEN)'),
+        ('UF', 'Unidad de Fomento (UF)'),
+        ('USD', 'Dólar Estadounidense (USD)'),
+        ('IPC', 'Índice de Precios al Consumidor (IPC)'),
+        ('UTM', 'Unidad Tributaria Mensual (UTM)'),
+        ('OTRO', 'Otro'),
+    ]
+
+    descripcion = models.CharField(max_length=150, choices=FACTOR_CHOICES)
     valor = models.DecimalField(max_digits=20, decimal_places=8)
 
     def __str__(self):
-        return f"{self.descripcion} = {self.valor}"
+        return f"{self.get_descripcion_display()} = {self.valor}"
+
 
 
 # Archivo de carga y CargasMasivas
