@@ -23,7 +23,8 @@ router = DefaultRouter()
 urlpatterns = [
     path('calificaciones/', views.calificacion_list_view, name='calificacion_list_view'),
     path('calificaciones/nueva/', views.calificacion_create_view, name='calificacion_create_view'),
-    path('calificaciones/<int:id>/editar/', views.calificacion_update_view, name='calificacion_update_view'),      
+    path('calificaciones/<int:id>/editar/', views.calificacion_update_view, name='calificacion_update_view'),
+    path('busqueda/<int:id>/ver/', views.calificacion_read_detail_view, name='calificacion_read_detail_view'),   
     path('calificaciones/<int:id>/eliminar/', views.calificacion_delete_view, name='calificacion_delete_view'),
     path('busqueda/', views.calificacion_read_view, name='calificacion_read_view'),
     path('', include(router.urls)),

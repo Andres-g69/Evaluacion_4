@@ -324,7 +324,7 @@ def carga_view(request):
     cargas = ArchivoCarga.objects.all().order_by('-fecha_carga')
     return render(request, 'api/Carga.html', {'cargas': cargas})
 
-# 🔹 Listado de cargas (nuevo template)
+# 🔹 Listado de cargas
 @login_required
 def listado_carga_view(request):
     cargas = ArchivoCarga.objects.all().order_by('-fecha_carga')
@@ -360,3 +360,24 @@ def descarga_archivo(request, archivo_id):
     except FileNotFoundError:
         raise Http404("El archivo no existe")
 
+# 🔹 VISTA DETALLE DE BÚSQUEDA (SOLO LECTURA)
+
+@login_required
+def calificacion_read_detail_view(request, id):
+    """
+    Muestra la información completa de una calificación tributaria
+    desde la búsqueda, en modo solo lectura (sin edición).
+    """
+    calificacion = get_object_or_404(CalificacionTributaria, id=id)
+    form = CalificacionTributariaForm(instance=calificacion)
+
+    # Deshabilitar los campos del formulario para modo lectura
+    for field in form.fields.values():
+        field.widget.attrs['readonly'] = True
+        field.widget.attrs['disabled'] = True
+
+    return render(request, 'calificaciones/formulario.html', {
+        'form': form,
+        'modo': 'ver',
+        'calificacion': calificacion,
+    })

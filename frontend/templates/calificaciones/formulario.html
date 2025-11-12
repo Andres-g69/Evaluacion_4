@@ -23,12 +23,13 @@
                     {% endif %}
                 </div>
             {% endfor %}
-
+            {% if modo != "ver" %}
             <button type="submit" class="btn" 
                     style="width:100%; background:#003366; color:white;">
                 Guardar
             </button>
-
+            {% endif %}
+            
             <a href="{% url 'api:calificacion_list_view' %}" class="btn" 
                style="width:100%; margin-top:10px; background:#777;">
                 Volver
