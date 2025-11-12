@@ -1,0 +1,30 @@
+{% extends "admin/BaseAdminDashboard.html" %}
+{% block content %}
+
+<h1 class="mb-4">Panel de Administración</h1>
+<p>Bienvenido, {{ request.user.username }}. Desde aquí puedes gestionar usuarios y revisar las auditorías del sistema.</p>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card bg-dark text-white mb-3">
+            <div class="card-body">
+                <h4>👥 Gestión de Usuarios</h4>
+                <p>Consulta, edita o elimina cuentas del sistema.</p>
+                <a href="{% url 'api:admin_usuarios' %}" class="btn btn-primary">Ir a usuarios</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card bg-dark text-white mb-3">
+            <div class="card-body">
+                <h4>🧾 Auditorías</h4>
+                <p>Revisa las acciones registradas dentro del sistema.</p>
+                <a href="{% url 'api:admin_auditorias' %}" class="btn btn-primary">Ir a auditorías</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+

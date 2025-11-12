@@ -17,13 +17,15 @@ def login_view(request):
         username = request.POST.get('usuario')
         password = request.POST.get('password')
 
-        user = authenticate(username=username, password=password)
+        user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('dashboard')
+            if user.is_superuser:
+                return redirect('api:admin_dashboard')
+            else:
+                return redirect('dashboard')
         else:
-            messages.error(request, 'Credenciales incorrectas.')
-
+            messages.error(request, "Usuario o contraseña incorrectos")
     return render(request, 'api/Login.html')
 
 

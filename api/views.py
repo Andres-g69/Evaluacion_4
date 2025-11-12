@@ -1,6 +1,6 @@
 import re, os
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -189,6 +189,33 @@ class AuditoriaViewSet(viewsets.ReadOnlyModelViewSet):
 # =====================================================
 #  🔹 VISTAS HTML (CRUD y búsquedas)
 # =====================================================
+
+# ADMIN
+
+# Decorador personalizado para admin
+def admin_required(view_func):
+    return user_passes_test(lambda u: u.is_superuser or u.is_staff)(view_func)
+
+@login_required
+@admin_required
+def admin_dashboard_view(request):
+    return render(request, 'admin/admin_dashboard.html')
+
+
+@login_required
+@admin_required
+def admin_usuarios_view(request):
+    usuarios = User.objects.all()
+    return render(request, 'admin/admin_usuarios.html', {'usuarios': usuarios})
+
+
+@login_required
+@admin_required
+def admin_auditorias_view(request):
+    auditorias = Auditoria.objects.select_related('usuario').order_by('-fecha')
+    return render(request, 'admin/admin_auditorias.html', {'auditorias': auditorias})
+
+
 
 # 📄 LISTAR
 @login_required

@@ -22,12 +22,12 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
 
     class Meta:
         model = UserProfile
-        fields = ["id", "user", "role", "activo"]
-
+        fields = ['id', 'username', 'email', 'role', 'activo']
 
 # =============================
 # INSTRUMENTO

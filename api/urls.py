@@ -32,5 +32,8 @@ urlpatterns = [
     path('carga/listado/', views.listado_carga_view, name='listado_carga'),
     path('carga/procesar/', views.procesar_archivo, name='archivo-carga-procesar'),
     path('cargas/descargar/<int:archivo_id>/', views.descarga_archivo, name='archivo_descargar'),
+    path('admin-dashboard/', views.admin_dashboard_view, name='admin_dashboard'),
+    path('admin-usuarios/', views.admin_usuarios_view, name='admin_usuarios'),
+    path('admin-auditorias/', views.admin_auditorias_view, name='admin_auditorias'),
 ]
 
