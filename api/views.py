@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.http import JsonResponse, FileResponse, Http404
+from .utils import registrar_auditoria
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -190,7 +191,9 @@ class AuditoriaViewSet(viewsets.ReadOnlyModelViewSet):
 #  🔹 VISTAS HTML (CRUD y búsquedas)
 # =====================================================
 
-# ADMIN
+# ======================
+# ADMIN Y AUDITORIAS
+# ======================
 
 # Decorador personalizado para admin
 def admin_required(view_func):
@@ -205,7 +208,11 @@ def admin_dashboard_view(request):
 @login_required
 @admin_required
 def admin_usuarios_view(request):
-    usuarios = User.objects.all()
+    usuarios = User.objects.all().order_by('id')
+
+    if not usuarios.exists():
+        messages.warning(request, "Actualmente no hay usuarios registrados en el sistema.")
+
     return render(request, 'admin/admin_usuarios.html', {'usuarios': usuarios})
 
 
@@ -215,21 +222,93 @@ def admin_auditorias_view(request):
     auditorias = Auditoria.objects.select_related('usuario').order_by('-fecha')
     return render(request, 'admin/admin_auditorias.html', {'auditorias': auditorias})
 
+@login_required
+@admin_required
+def admin_usuario_crear_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        rol = request.POST.get('rol')
+
+        # Validaciones básicas
+        if not username or not email or not password:
+            messages.error(request, "Todos los campos son obligatorios.")
+            return redirect('api:admin_usuario_crear')
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "El nombre de usuario ya existe.")
+            return redirect('api:admin_usuario_crear')
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "El correo electrónico ya está en uso.")
+            return redirect('api:admin_usuario_crear')
+
+        # Crear usuario
+        usuario = User.objects.create_user(username=username, email=email, password=password)
+        if rol == 'admin':
+            usuario.is_superuser = True
+            usuario.is_staff = True
+        usuario.save()
+
+        registrar_auditoria(request.user, f"Creó un nuevo usuario {usuario.username}", request, detalle= "Gestion Usuarios")
+        messages.success(request, f"Usuario '{usuario.username}' creado correctamente.")
+        return redirect('api:admin_usuarios')
+
+    return render(request, 'admin/admin_usuario_crear.html')
+
+@login_required
+@admin_required
+def admin_usuario_editar_view(request, user_id):
+    usuario = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        is_active = bool(request.POST.get('is_active'))
+        rol = request.POST.get('rol')
+
+        usuario.username = username
+        usuario.email = email
+        usuario.is_active = is_active
+        usuario.is_superuser = True if rol == 'admin' else False
+        usuario.is_staff = usuario.is_superuser
+        usuario.save()
+
+        registrar_auditoria(request.user, f"Editó usuario {usuario.username}", request, detalle= "Gestion Usuarios")
+
+        messages.success(request, "Usuario actualizado correctamente.")
+        return redirect('api:admin_usuarios')
+
+    return render(request, 'admin/admin_usuario_editar.html', {'usuario': usuario})
 
 
-# 📄 LISTAR
+@login_required
+@admin_required
+def admin_usuario_eliminar_view(request, user_id):
+    usuario = get_object_or_404(User, id=user_id)
+
+    # Evitar eliminar todos los usuarios normales
+    if not usuario.is_superuser:
+        usuarios_normales = User.objects.filter(is_superuser=False)
+        if usuarios_normales.count() <= 1:
+            messages.error(request, "No puedes eliminar el último usuario del sistema.")
+            return redirect('api:admin_usuarios')
+
+    registrar_auditoria(request.user, f"Eliminó usuario {usuario.username}", request, detalle= "Gestion Usuarios")
+    usuario.delete()
+    messages.success(request, f"Usuario '{usuario.username}' eliminado correctamente.")
+    return redirect('api:admin_usuarios')
+
+
+# ======================
+# CALIFICACIONES
+# ======================
 @login_required
 def calificacion_list_view(request):
-
-    # ✅ corregido: no más select_related instrumento/factor
     calificaciones = CalificacionTributaria.objects.all()
+    return render(request, 'calificaciones/listado.html', {'calificaciones': calificaciones})
 
-    return render(request, 'calificaciones/listado.html', {
-        'calificaciones': calificaciones
-    })
-
-
-# ➕ CREAR
 @login_required
 def calificacion_create_view(request):
     if request.method == 'POST':
@@ -238,130 +317,54 @@ def calificacion_create_view(request):
             obj = form.save(commit=False)
             obj.creado_por = request.user
             obj.save()
-
-            HistorialCalificacion.objects.create(
-                calificacion=obj,
-                usuario=request.user,
-                accion="Creó",
-                descripcion="Creación manual desde el panel HTML"
-            )
-
+            registrar_auditoria(request.user, f"Creó calificación ID {obj.id}", request, detalle= "CRUD Calificaciones")
             messages.success(request, "✅ Calificación creada correctamente.")
             return redirect('api:calificacion_list_view')
         else:
-            messages.error(request, "❌ Error al crear la calificación. Verifique los datos.")
+            messages.error(request, "❌ Error al crear la calificación.")
     else:
         form = CalificacionTributariaForm()
-
     return render(request, 'calificaciones/formulario.html', {'form': form})
 
-
-# ✏️ EDITAR
 @login_required
 def calificacion_update_view(request, id):
     calificacion = get_object_or_404(CalificacionTributaria, id=id)
-
     if request.method == 'POST':
         form = CalificacionTributariaForm(request.POST, instance=calificacion)
         if form.is_valid():
             form.save()
-
-            HistorialCalificacion.objects.create(
-                calificacion=calificacion,
-                usuario=request.user,
-                accion="Modificó",
-                descripcion="Actualización manual desde el panel HTML"
-            )
-
+            registrar_auditoria(request.user, f"Modificó calificación ID {calificacion.id}", request, detalle= "CRUD Califiaciones")
             messages.success(request, "✏️ Calificación actualizada correctamente.")
             return redirect('api:calificacion_list_view')
         else:
             messages.error(request, "❌ Error al actualizar la calificación.")
     else:
         form = CalificacionTributariaForm(instance=calificacion)
+    return render(request, 'calificaciones/formulario.html', {'form': form, 'calificacion': calificacion})
 
-    return render(request, 'calificaciones/formulario.html', {
-        'form': form,
-        'calificacion': calificacion
-    })
-
-
-# 🗑️ ELIMINAR
 @login_required
 def calificacion_delete_view(request, id):
     calificacion = get_object_or_404(CalificacionTributaria, id=id)
-
     if request.method == 'POST':
-        HistorialCalificacion.objects.create(
-            calificacion=calificacion,
-            usuario=request.user,
-            accion="Eliminó",
-            descripcion="Eliminación manual desde el panel HTML"
-        )
+        registrar_auditoria(request.user, f"Eliminó calificación ID {calificacion.id}", request, detalle= "CRUD Calificaciones")
         calificacion.delete()
         messages.success(request, "🗑️ Calificación eliminada correctamente.")
         return redirect('api:calificacion_list_view')
-
     return render(request, 'calificaciones/confirmar_eliminacion.html', {'calificacion': calificacion})
 
-
-# 🔍 BUSCAR
+# ======================
+# BUSQUEDA
+# ======================
 @login_required
 def calificacion_read_view(request):
     rut = request.GET.get('rut', '').strip()
     calificaciones = CalificacionTributaria.objects.all()
-
     if rut:
         rut_limpio = re.sub(r'[\.\-]', '', rut)
         calificaciones = calificaciones.filter(rut__iregex=r'{}|{}'.format(rut, rut_limpio))
-
     return render(request, 'api/Busqueda.html', {'calificaciones': calificaciones})
 
-
-# 📤 CARGA MASIVA HTML
-@login_required
-def carga_view(request):
-    cargas = ArchivoCarga.objects.all().order_by('-fecha_carga')
-    return render(request, 'api/Carga.html', {'cargas': cargas})
-
-# 🔹 Listado de cargas
-@login_required
-def listado_carga_view(request):
-    cargas = ArchivoCarga.objects.all().order_by('-fecha_carga')
-    return render(request, 'api/listado_carga.html', {'cargas': cargas})
-
-# 🔹 Procesar archivo vía AJAX
-@api_view(['POST'])
-@login_required
-def procesar_archivo(request):
-    archivo = request.FILES.get('archivo')
-    tipo = request.POST.get('tipo_archivo', 'OTRO')
-
-    if not archivo:
-        return Response({'error': 'Debe subir un archivo'}, status=400)
-
-    carga = ArchivoCarga.objects.create(
-        archivo=archivo,
-        usuario=request.user,
-        tipo_archivo=tipo,
-        estado='Cargado'
-    )
-
-    serializer = ArchivoCargaSerializer(carga)
-    return Response({'success': True, 'carga': serializer.data})
-
-@login_required
-def descarga_archivo(request, archivo_id):
-    carga = get_object_or_404(ArchivoCarga, id=archivo_id)
-    archivo_path = carga.archivo.path
-
-    try:
-        return FileResponse(open(archivo_path, 'rb'), as_attachment=True, filename=os.path.basename(archivo_path))
-    except FileNotFoundError:
-        raise Http404("El archivo no existe")
-
-# 🔹 VISTA DETALLE DE BÚSQUEDA (SOLO LECTURA)
-
+# SOLO LECTURA
 @login_required
 def calificacion_read_detail_view(request, id):
     """
@@ -381,3 +384,44 @@ def calificacion_read_detail_view(request, id):
         'modo': 'ver',
         'calificacion': calificacion,
     })
+
+# ======================
+# CARGA MASIVA
+# ======================
+@login_required
+def carga_view(request):
+    cargas = ArchivoCarga.objects.all().order_by('-fecha_carga')
+    return render(request, 'api/Carga.html', {'cargas': cargas})
+
+@login_required
+def listado_carga_view(request):
+    cargas = ArchivoCarga.objects.all().order_by('-fecha_carga')
+    return render(request, 'api/listado_carga.html', {'cargas': cargas})
+
+@api_view(['POST'])
+@login_required
+def procesar_archivo(request):
+    archivo = request.FILES.get('archivo')
+    tipo = request.POST.get('tipo_archivo', 'OTRO')
+    if not archivo:
+        return Response({'error': 'Debe subir un archivo'}, status=400)
+    carga = ArchivoCarga.objects.create(
+        archivo=archivo,
+        usuario=request.user,
+        tipo_archivo=tipo,
+        estado='Cargado'
+    )
+    registrar_auditoria(request.user, f"Subió archivo {archivo.name}", request, detalle= "Carga Archivos")
+    serializer = ArchivoCargaSerializer(carga)
+    return Response({'success': True, 'carga': serializer.data})
+
+@login_required
+def descarga_archivo(request, archivo_id):
+    carga = get_object_or_404(ArchivoCarga, id=archivo_id)
+    archivo_path = carga.archivo.path
+    try:
+        return FileResponse(open(archivo_path, 'rb'), as_attachment=True, filename=os.path.basename(archivo_path))
+    except FileNotFoundError:
+        raise Http404("El archivo no existe")
+
+

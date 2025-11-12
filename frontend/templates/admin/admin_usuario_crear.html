@@ -1,0 +1,36 @@
+{% extends "admin/BaseAdminDashboard.html" %}
+{% block content %}
+
+<h2>Crear Nuevo Usuario</h2>
+<p>Complete los campos para registrar un nuevo usuario en el sistema.</p>
+
+<form method="POST" class="mt-4">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label>Nombre de Usuario:</label>
+        <input type="text" name="username" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Correo electrónico:</label>
+        <input type="email" name="email" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Contraseña:</label>
+        <input type="password" name="password" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Rol:</label>
+        <select name="rol" class="form-select">
+            <option value="usuario">Usuario</option>
+            <option value="admin">Administrador</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-success">Crear usuario</button>
+    <a href="{% url 'api:admin_usuarios' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+
+{% endblock %}

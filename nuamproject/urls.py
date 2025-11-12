@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from api.utils import registrar_auditoria
 
 
 # =============================
@@ -20,6 +21,10 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+
+            # Registrar inicio de sesión, único por usuario
+            registrar_auditoria(user, "Inicio de sesion", request, detalle="Registro Sesiones", unique_per_session=True)
+
             if user.is_superuser:
                 return redirect('api:admin_dashboard')
             else:

@@ -17,7 +17,6 @@ admin.site.register(ArchivoCarga)
 admin.site.register(CargaError)
 admin.site.register(CalificacionTributaria)
 admin.site.register(HistorialCalificacion)
-admin.site.register(Auditoria)
 admin.site.register(CargaRegistro)
 
 
@@ -32,3 +31,9 @@ class UserProfileAdmin(admin.ModelAdmin):
     def get_email(self, obj):
         return obj.user.email
     get_email.short_description = "Correo"
+
+@admin.register(Auditoria)
+class AuditoriaAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'accion', 'fecha', 'ip')
+    search_fields = ('usuario__username', 'accion')
+    list_filter = ('fecha',)

@@ -2,7 +2,9 @@
 {% block content %}
 
 <h2>Gestión de Usuarios</h2>
-<p>Visualiza todos los usuarios registrados en el sistema NUAM.</p>
+<p>Visualiza, edita, elimina o crea usuarios del sistema NUAM.</p>
+
+<a href="{% url 'api:admin_usuario_crear' %}" class="btn btn-success mb-3">+ Crear nuevo usuario</a>
 
 <table class="table table-dark table-striped mt-3">
     <thead>
@@ -12,6 +14,7 @@
             <th>Email</th>
             <th>Activo</th>
             <th>Rol</th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -22,10 +25,18 @@
             <td>{{ user.email }}</td>
             <td>{{ user.is_active|yesno:"Sí,No" }}</td>
             <td>{% if user.is_superuser %}Administrador{% else %}Usuario{% endif %}</td>
+            <td>
+                <a href="{% url 'api:admin_usuario_editar' user.id %}" class="btn btn-warning btn-sm">Editar</a>
+                <a href="{% url 'api:admin_usuario_eliminar' user.id %}" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de eliminar este usuario?')">Eliminar</a>
+            </td>
         </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-warning">⚠️ No hay usuarios registrados en el sistema.</td></tr>
         {% endfor %}
     </tbody>
 </table>
 
 {% endblock %}
+
+
 

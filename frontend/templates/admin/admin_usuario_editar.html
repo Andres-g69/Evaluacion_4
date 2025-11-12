@@ -1,0 +1,36 @@
+{% extends "admin/BaseAdminDashboard.html" %}
+{% block content %}
+
+<h2>Editar Usuario</h2>
+<p>Modifica los datos del usuario seleccionado.</p>
+
+<form method="POST" class="mt-4">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label>Nombre de Usuario:</label>
+        <input type="text" name="username" value="{{ usuario.username }}" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Correo electrónico:</label>
+        <input type="email" name="email" value="{{ usuario.email }}" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Activo:</label>
+        <input type="checkbox" name="is_active" {% if usuario.is_active %}checked{% endif %}>
+    </div>
+
+    <div class="mb-3">
+        <label>Rol:</label>
+        <select name="rol" class="form-select">
+            <option value="usuario" {% if not usuario.is_superuser %}selected{% endif %}>Usuario</option>
+            <option value="admin" {% if usuario.is_superuser %}selected{% endif %}>Administrador</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-success">Guardar cambios</button>
+    <a href="{% url 'api:admin_usuarios' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+
+{% endblock %}
