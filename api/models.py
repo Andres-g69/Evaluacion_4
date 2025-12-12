@@ -3,178 +3,449 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.db import models
+import os
+from django.conf import settings
 
-# UserProfile (roles fijos)
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    role = models.CharField(max_length=50, choices=[
-        ("ADMIN", "Administrador"),
-        ("USER", "Usuario"),
-    ])
+
+# -----------------------------------------------------------
+#  TIPO_CALIFICACION
+# -----------------------------------------------------------
+class TipoCalificacion(models.Model):
+    codigo = models.CharField(max_length=10, primary_key=True)
+    descripcion = models.CharField(max_length=100)
+    categoria = models.CharField(max_length=50)
+    monto_minimo = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    monto_maximo = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    requisitos = models.TextField(null=True, blank=True)
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "tipo_calificacion"
+
+    def __str__(self):
+        return f"{self.codigo} - {self.descripcion}"
+
+
+# -----------------------------------------------------------
+#  CONTRIBUYENTE
+# -----------------------------------------------------------
+class Contribuyente(models.Model):
+    rut = models.CharField(max_length=12, primary_key=True)
+    razon_social = models.CharField(max_length=100)
+    direccion = models.CharField(max_length=200)
+    telefono = models.CharField(max_length=20, null=True, blank=True)
+    email = models.CharField(max_length=100)
+    fecha_inscripcion = models.DateField(null=True, blank=True)
+    tipo_contribuyente = models.CharField(max_length=20)
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    usuario_creacion = models.CharField(max_length=50)
+    usuario_actualizacion = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = "contribuyente"
+
+    def __str__(self):
+        return f"{self.rut} - {self.razon_social}"
+
+
+# -----------------------------------------------------------
+#  CALIFICACION_TRIBUTARIA
+# -----------------------------------------------------------
+class CalificacionTributaria(models.Model):
+    id_calificacion = models.BigAutoField(primary_key=True)
+
+    rut_contribuyente = models.ForeignKey(
+        Contribuyente,
+        on_delete=models.CASCADE,
+        db_column='rut_contribuyente',
+        related_name='calificaciones'
+    )
+
+    codigo_tipo_calificacion = models.ForeignKey(
+        TipoCalificacion,
+        on_delete=models.PROTECT,
+        db_column='codigo_tipo_calificacion',
+        related_name='calificaciones'
+    )
+
+    fecha_calificacion = models.DateField()
+    monto_anual = models.DecimalField(max_digits=12, decimal_places=2)
+    periodo = models.IntegerField()
+    estado = models.CharField(max_length=20)
+    observaciones = models.TextField(null=True, blank=True)
+    fecha_vencimiento = models.DateField(null=True, blank=True)
+    vigente = models.BooleanField(default=True)
+
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    usuario_creacion = models.CharField(max_length=50)
+    usuario_actualizacion = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = "calificacion_tributaria"
+
+    def __str__(self):
+        return f"Calificación {self.id_calificacion} ({self.rut_contribuyente_id})"
+
+
+# -----------------------------------------------------------
+#  DOCUMENTO_TRIBUTARIO
+# -----------------------------------------------------------
+class DocumentoTributario(models.Model):
+    id_documento = models.BigAutoField(primary_key=True)
+
+    rut_contribuyente = models.ForeignKey(
+        Contribuyente,
+        on_delete=models.CASCADE,
+        db_column='rut_contribuyente',
+        related_name='documentos'
+    )
+
+    tipo_documento = models.CharField(max_length=20)
+    fecha_emision = models.DateField()
+    fecha_recepcion = models.DateField(null=True, blank=True)
+    monto_documento = models.DecimalField(max_digits=12, decimal_places=2)
+    estado = models.CharField(max_length=20)
+    ruta_archivo = models.CharField(max_length=500, null=True, blank=True)
+    hash_archivo = models.CharField(max_length=64, null=True, blank=True)
+
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    usuario_creacion = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = "documento_tributario"
+
+    def __str__(self):
+        return f"Documento {self.id_documento} ({self.rut_contribuyente_id})"
+
+
+
+# -----------------------------------------------------------
+#  TIPO_DOCUMENTO
+# -----------------------------------------------------------
+class TipoDocumento(models.Model):
+    codigo = models.CharField(max_length=20, primary_key=True)
+    descripcion = models.CharField(max_length=100)
+    categoria = models.CharField(max_length=10)
+    requiere_validacion = models.BooleanField(default=False)
+    dias_vencimiento = models.IntegerField()
     activo = models.BooleanField(default=True)
 
-    def __str__(self):
-        return f"{self.user.username} ({self.user.email})"
-
-    # Propiedades para acceso directo
-    @property
-    def username(self):
-        return self.user.username
-
-    @property
-    def email(self):
-        return self.user.email
-
-    @property
-    def password(self):
-        # ⚠️ Por seguridad, no mostrar contraseñas planas
-        return "********"
-
-# Crear UserProfile automáticamente al crear User
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        UserProfile.objects.create(user=instance)
-
-# Instrumento
-class Instrumento(models.Model):
-    # Opciones predefinidas de instrumentos
-    INSTRUMENTO_CHOICES = [
-        ('ACCION', 'Acción'),
-        ('BONO', 'Bono'),
-        ('FONDO_MUTUO', 'Fondo Mutuo'),
-        ('ETF', 'ETF'),
-        ('DERIVADO', 'Derivado'),
-        ('FACTURA', 'Factura'),
-        ('CERTIFICADO_AHORRO', 'Certificado de ahorro'),
-        ('CRYPTO', 'Activo Digital'),
-        ('OTRO', 'Otro'),
-    ]
-
-    codigo = models.CharField(max_length=50, unique=True, blank=True, null=True)
-    nombre = models.CharField(max_length=150, choices=INSTRUMENTO_CHOICES)
-    tipo = models.CharField(max_length=100, blank=True, null=True)
-    inscrito = models.BooleanField(default=False)
+    class Meta:
+        db_table = "tipo_documento"
 
     def __str__(self):
-        return self.get_nombre_display()  # Muestra el texto legible del choice
+        return self.codigo
 
 
-# Factor de conversión
-class FactorConversion(models.Model):
-    # Opciones predefinidas de factores
-    FACTOR_CHOICES = [
-        ('CLP', 'Peso Chileno (CLP)'),
-        ('COP', 'Peso Colombiano (COP)'),
-        ('PEN', 'Nuevo sol Peruano (PEN)'),
-        ('UF', 'Unidad de Fomento (UF)'),
-        ('USD', 'Dólar Estadounidense (USD)'),
-        ('IPC', 'Índice de Precios al Consumidor (IPC)'),
-        ('UTM', 'Unidad Tributaria Mensual (UTM)'),
-        ('OTRO', 'Otro'),
-    ]
+# -----------------------------------------------------------
+#  NOTIFICACION
+# -----------------------------------------------------------
+class Notificacion(models.Model):
+    id_notificacion = models.BigAutoField(primary_key=True)
 
-    descripcion = models.CharField(max_length=150, choices=FACTOR_CHOICES)
-    valor = models.DecimalField(max_digits=20, decimal_places=8)
+    rut_contribuyente = models.ForeignKey(
+        "Contribuyente",
+        on_delete=models.CASCADE,
+        db_column='rut_contribuyente',
+        related_name='notificaciones'
+    )
 
-    def __str__(self):
-        return f"{self.get_descripcion_display()} = {self.valor}"
+    tipo_notificacion = models.CharField(max_length=50)
+    destinatario = models.CharField(max_length=100)
+    asunto = models.CharField(max_length=200)
+    mensaje = models.TextField(null=True, blank=True)
+    estado = models.CharField(max_length=20)
 
+    fecha_envio = models.DateTimeField(null=True, blank=True)
+    fecha_programada = models.DateTimeField(null=True, blank=True)
+    intentos_envio = models.IntegerField(default=0)
+    error_envio = models.TextField(null=True, blank=True)
 
-
-# Archivo de carga y CargasMasivas
-class ArchivoCarga(models.Model):
-    TIPO_DJ1948 = 'DJ1948'
-    TIPO_FACTORES = 'FACTORES'
-    TIPO_OTRO = 'OTRO'
-
-    TIPO_CHOICES = [
-        (TIPO_DJ1948, 'DJ1948'),
-        (TIPO_FACTORES, 'Factores'),
-        (TIPO_OTRO, 'Otro'),
-    ]
-
-    archivo = models.FileField(upload_to='uploads/%Y/%m/%d/')
-    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='archivos_carga')
-    fecha_carga = models.DateTimeField(auto_now_add=True)
-    estado = models.CharField(max_length=30, default='Pendiente')
-    tipo_archivo = models.CharField(max_length=20, choices=TIPO_CHOICES, default=TIPO_OTRO)
-    mensaje = models.TextField(blank=True)
+    class Meta:
+        db_table = "notificacion"
 
     def __str__(self):
-        return f"ArchivoCarga {self.id} - {self.tipo_archivo} - {self.estado}"
+        return f"Notificación {self.id_notificacion}"
 
 
-class CargaError(models.Model):
-    archivo = models.ForeignKey(ArchivoCarga, on_delete=models.CASCADE, related_name='errores')
-    linea = models.PositiveIntegerField()
-    mensaje = models.TextField()
+# -----------------------------------------------------------
+#  USUARIO
+# -----------------------------------------------------------
+class Usuario(models.Model):
+    id_usuario = models.CharField(max_length=50, primary_key=True)
+    nombre_usuario = models.CharField(max_length=50)
+    contraseña_hash = models.CharField(max_length=255)
+    email = models.CharField(max_length=100)
+    rol = models.CharField(max_length=20)
 
-    def __str__(self):
-        return f"Error archivo {self.archivo.id} linea {self.linea}"
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateField()
+    ultimo_acceso = models.DateTimeField(null=True, blank=True)
+    intento_fallidos = models.IntegerField(default=0)
+    bloqueado = models.BooleanField(default=False)
+    fecha_bloqueo = models.DateField(null=True, blank=True)
 
-
-# Calificaciones Tributarias
-class CalificacionTributaria(models.Model):
-    TIPO_DJ1948 = 'DJ1948'
-    TIPO_FACTOR = 'FACTOR'
-    TIPO_MANUAL = 'MANUAL'
-
-    TIPO_CHOICES = [
-        (TIPO_DJ1948, 'DJ1948'),
-        (TIPO_FACTOR, 'Factor'),
-        (TIPO_MANUAL, 'Manual'),
-    ]
-
-    instrumento = models.CharField(max_length=255, blank=True, null=True)
-    rut = models.CharField(max_length=15, blank=True, null=True)
-    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
-    monto = models.DecimalField(max_digits=18, decimal_places=2)
-    factor = models.CharField(max_length=255, blank=True, null=True)
-    fecha = models.DateField()
-    estado = models.CharField(max_length=30, default='Vigente')
-    comentario = models.TextField(blank=True)
-
-    creado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='calificaciones_creadas')
-    creado_en = models.DateTimeField(auto_now_add=True)
-    actualizado_en = models.DateTimeField(auto_now=True)
-    archivo_origen = models.ForeignKey(ArchivoCarga, on_delete=models.SET_NULL, null=True, blank=True, related_name='calificaciones_generadas')
+    class Meta:
+        db_table = "usuario"
 
     def __str__(self):
-        return f"Calificacion {self.id} - {self.instrumento} - {self.tipo}"
+        return self.id_usuario
 
 
-# Historial de calificaciones (auditoría específica)
-class HistorialCalificacion(models.Model):
-    calificacion = models.ForeignKey(CalificacionTributaria, on_delete=models.CASCADE, related_name='historial')
-    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    accion = models.CharField(max_length=50)  # Creó / Modificó / Eliminó / Cargó
-    descripcion = models.TextField(blank=True)
-    fecha = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.accion} - {self.calificacion.id} - {self.fecha.isoformat()}"
-
-
-# Auditoría general (más genérica que HistorialCalificacion)
+# -----------------------------------------------------------
+#  AUDITORIA
+# -----------------------------------------------------------
 class Auditoria(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    accion = models.CharField(max_length=255)
-    fecha = models.DateTimeField(auto_now_add=True)
-    ip = models.GenericIPAddressField(null=True, blank=True)
+    id_auditoria = models.BigAutoField(primary_key=True)
+    tabla_afectada = models.CharField(max_length=30)
+    operacion = models.CharField(max_length=20)
+    usuario = models.CharField(max_length=50)
+    fecha_operacion = models.DateTimeField(auto_now_add=True)
 
-    detalle = models.TextField(blank=True)
+    datos_anteriores = models.JSONField(null=True, blank=True)
+    datos_nuevos = models.JSONField(null=True, blank=True)
 
-    def __str__(self):
-        return f"Auditoria {self.id} - {self.usuario} - {self.accion}"
+    id_sesion = models.CharField(max_length=100, null=True, blank=True)
+    user_agent = models.CharField(max_length=200, null=True, blank=True)
+    aplicacion_origen = models.CharField(max_length=50, null=True, blank=True)
 
-
-# Registro de acciones / logs sobre la carga (opcional)
-class CargaRegistro(models.Model):
-    archivo = models.ForeignKey(ArchivoCarga, on_delete=models.CASCADE, related_name='registros')
-    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    fecha_registro = models.DateTimeField(auto_now_add=True)
-    descripcion = models.TextField()
+    class Meta:
+        db_table = "api_auditoria"
 
     def __str__(self):
-        return f"Registro {self.id} - archivo {self.archivo.id}"
+        return f"Auditoria {self.id_auditoria}"
+
+
+# -----------------------------------------------------------
+#  SESION_USUARIO
+# -----------------------------------------------------------
+class SesionUsuario(models.Model):
+    id_sesion = models.CharField(max_length=100, primary_key=True)
+
+    id_usuario = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        db_column='id_usuario',
+        related_name='sesiones'
+    )
+
+    fecha_inicio = models.DateTimeField()
+    fecha_fin = models.DateTimeField(null=True, blank=True)
+    ip_address = models.CharField(max_length=45)
+    user_agent = models.CharField(max_length=100)
+    estado = models.CharField(max_length=20)
+    datos_sesion = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = "sesion_usuario"
+
+    def __str__(self):
+        return self.id_sesion
+
+
+# -----------------------------------------------------------
+#  LOG_ERROR
+# -----------------------------------------------------------
+class LogError(models.Model):
+    id_error = models.BigAutoField(primary_key=True)
+    aplicacion = models.CharField(max_length=50)
+    nivel_error = models.CharField(max_length=20)
+    modulo = models.CharField(max_length=100)
+    mensaje_error = models.TextField()
+    stack_trace = models.TextField(null=True, blank=True)
+    usuario = models.CharField(max_length=50, null=True, blank=True)
+    fecha_error = models.DateTimeField(auto_now_add=True)
+    contexto_adicional = models.JSONField(null=True, blank=True)
+
+    class Meta:
+        db_table = "log_error"
+
+    def __str__(self):
+        return f"Error {self.id_error}"
+
+
+# -----------------------------------------------------------
+#  PERMISO
+# -----------------------------------------------------------
+class Permiso(models.Model):
+    codigo_permiso = models.CharField(max_length=50, primary_key=True)
+    descripcion = models.CharField(max_length=100)
+    modulo = models.CharField(max_length=50)
+    nivel_acceso = models.CharField(max_length=20)
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = "permiso"
+
+    def __str__(self):
+        return self.codigo_permiso
+
+
+# -----------------------------------------------------------
+#  ROL_PERMISO
+# -----------------------------------------------------------
+class RolPermiso(models.Model):
+    codigo_rol = models.CharField(max_length=20, primary_key=True)
+    codigo_permiso = models.ForeignKey(
+        Permiso,
+        on_delete=models.CASCADE,
+        db_column='codigo_permiso',
+        related_name='permisos_asignados'
+    )
+    concedido = models.BooleanField(default=True)
+    fecha_asignacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "rol_permiso"
+
+    def __str__(self):
+        return f"{self.codigo_rol} - {self.codigo_permiso.codigo_permiso}"
+
+
+# -----------------------------------------------------------
+#  PARAMETRO_SISTEMA
+# -----------------------------------------------------------
+class ParametroSistema(models.Model):
+    codigo = models.CharField(max_length=50, primary_key=True)
+    descripcion = models.CharField(max_length=100)
+    valor = models.CharField(max_length=500)
+    tipo_dato = models.CharField(max_length=20)
+    editable = models.BooleanField(default=False)
+    categoria = models.CharField(max_length=50)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "parametro_sistema"
+
+    def __str__(self):
+        return self.codigo
+
+
+# -----------------------------------------------------------
+#  HISTORICO_CALIFICACION
+# -----------------------------------------------------------
+class HistoricoCalificacion(models.Model):
+    id_historico = models.BigAutoField(primary_key=True)
+
+    id_calificacion = models.ForeignKey(
+        "CalificacionTributaria",
+        on_delete=models.CASCADE,
+        db_column='id_calificacion',
+        related_name='historicos'
+    )
+
+    rut_contribuyente = models.ForeignKey(
+        "Contribuyente",
+        on_delete=models.CASCADE,
+        db_column='rut_contribuyente',
+        related_name='historicos_calificacion'
+    )
+
+    codigo_tipo_calificacion = models.ForeignKey(
+        "TipoCalificacion",
+        on_delete=models.CASCADE,
+        db_column='codigo_tipo_calificacion',
+        related_name='historicos'
+    )
+
+    fecha_calificacion = models.DateField()
+    monto_anual = models.FloatField()
+    periodo = models.IntegerField()
+    estado = models.CharField(max_length=20)
+    observaciones = models.TextField(null=True, blank=True)
+    fecha_vencimiento = models.DateField(null=True, blank=True)
+
+    vigente = models.BooleanField(default=True)
+
+    usuario_modificacion = models.CharField(max_length=50)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+    tipo_modificacion = models.CharField(max_length=20)
+
+    class Meta:
+        db_table = "historico_calificacion"
+
+    def __str__(self):
+        return f"Histórico {self.id_historico}"
+
+
+# -----------------------------------------------------------
+#  VALIDACION_TRIBUTARIA
+# -----------------------------------------------------------
+class ValidacionTributaria(models.Model):
+    id_validacion = models.BigAutoField(primary_key=True)
+
+    id_calificacion = models.ForeignKey(
+        "CalificacionTributaria",
+        on_delete=models.CASCADE,
+        db_column='id_calificacion',
+        related_name='validaciones'
+    )
+
+    rut_contribuyente = models.ForeignKey(
+        "Contribuyente",
+        on_delete=models.CASCADE,
+        db_column='rut_contribuyente',
+        related_name='validaciones'
+    )
+
+    fecha_validacion = models.DateField()
+    tipo_validacion = models.CharField(max_length=20)
+    resultado = models.CharField(max_length=20)
+    observaciones = models.TextField(null=True, blank=True)
+    monto_validado = models.FloatField(null=True, blank=True)
+
+    usuario_validador = models.CharField(max_length=50)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "validacion_tributaria"
+
+    def __str__(self):
+        return f"Validación {self.id_validacion}"
+
+class Poblacion(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nombre = models.CharField(max_length=150)
+
+    class Meta:
+        db_table = "poblacion"
+
+    def __str__(self):
+        return self.nombre
+
+
+class CargaArchivo(models.Model):
+    ESTADOS = (
+        ('PENDIENTE', 'PENDIENTE'),
+        ('EN_PROCESO', 'EN_PROCESO'),
+        ('COMPLETADO', 'COMPLETADO'),
+        ('ERROR', 'ERROR'),
+    )
+    id = models.BigAutoField(primary_key=True)
+    archivo = models.FileField(upload_to='uploads/%Y/%m/%d/')
+    nombre_original = models.CharField(max_length=255, null=True, blank=True)
+    tipo = models.CharField(max_length=50, default='CALIFICACIONES')
+    usuario = models.CharField(max_length=100, null=True, blank=True)
+    fecha_carga = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='PENDIENTE')
+    detalle_error = models.TextField(null=True, blank=True)
+    procesados = models.IntegerField(default=0)
+    rechazados = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = "carga_archivo"
+
+    def __str__(self):
+        return f"Carga {self.id} - {self.nombre_original or self.archivo.name}"
+
+    def file_path(self):
+        if not self.archivo: return None
+        # ruta física
+        return os.path.join(settings.MEDIA_ROOT, self.archivo.name)

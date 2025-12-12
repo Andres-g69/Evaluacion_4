@@ -1,4 +1,4 @@
-{% extends 'api/BaseDashboard.html' %}
+{% extends 'frontend/BaseDashboard.html' %}
 {% block content %}
 <h1>{% if calificacion %}Editar{% else %}Nueva{% endif %} Calificación</h1>
 
@@ -17,7 +17,7 @@
 
     <div style="margin-top:12px;display:flex;gap:10px">
       {% if modo != "ver" %}<button class="btn" type="submit">Guardar</button>{% endif %}
-      <a class="btn ghost" href="{% url 'api:calificacion_list_view' %}">Volver</a>
+      <a class="btn ghost" href="{% url 'frontend:calificaciones_listado_view' %}">Volver</a>
     </div>
   </form>
 </div>

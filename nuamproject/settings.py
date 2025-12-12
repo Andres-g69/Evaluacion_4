@@ -29,8 +29,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'frontend',
     'api',
-    #Django REST frameworks
     'rest_framework',
+    'rest_framework.authtoken',  
+    'django_filters',
     'corsheaders',
 ]
 
@@ -44,6 +45,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'static'
 
 STATICFILES_DIRS =[
     BASE_DIR / 'frontend' / 'static',
@@ -127,3 +129,35 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Archivos subidos por los usuarios
 MEDIA_URL = '/uploads/'
 MEDIA_ROOT = BASE_DIR / 'uploads'
+KAFKA_BOOTSTRAP_SERVERS = "kafka:9092"
+CORS_ALLOW_ALL_ORIGINS = True
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',  # opcional
+    ),
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 25,
+}
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'NUAM API',
+    'DESCRIPTION': 'API REST para calificaciones',
+    'VERSION': '1.0.0'
+}
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
+CSRF_TRUSTED_ORIGINS = [
+    'https://127.0.0.1',
+    'https://localhost',
+]

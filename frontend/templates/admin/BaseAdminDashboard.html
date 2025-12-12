@@ -46,11 +46,11 @@
     <div class="sidebar">
         <h3>⚙️ NUAM ADMIN</h3>
         <hr class="bg-light">
-        <a href="{% url 'api:admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">🏠 Dashboard</a>
-        <a href="{% url 'api:admin_usuarios' %}" class="{% if request.resolver_match.url_name == 'admin_usuarios' %}active{% endif %}">👥 Gestión de Usuarios</a>
-        <a href="{% url 'api:admin_auditorias' %}" class="{% if request.resolver_match.url_name == 'admin_auditorias' %}active{% endif %}">🧾 Auditorías</a>
+        <a href="{% url 'admin:admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">🏠 Dashboard</a>
+        <a href="{% url 'admin:admin_usuarios' %}" class="{% if request.resolver_match.url_name == 'admin_usuarios' %}active{% endif %}">👥 Gestión de Usuarios</a>
+        <a href="{% url 'admin:admin_auditorias' %}" class="{% if request.resolver_match.url_name == 'admin_auditorias' %}active{% endif %}">🧾 Auditorías</a>
         <hr class="bg-light">
-        <a href="{% url 'logout' %}" class="logout-btn text-center text-danger">🚪 Cerrar sesión</a>
+        <a href="{% url 'frontend:logout' %}" class="logout-btn text-center text-danger">🚪 Cerrar sesión</a>
     </div>
 
     <div class="content">

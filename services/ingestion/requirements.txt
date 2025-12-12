@@ -1,0 +1,5 @@
+Django>=4.2
+pandas
+openpyxl
+confluent-kafka
+psycopg2-binary

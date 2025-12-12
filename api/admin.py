@@ -1,39 +1,35 @@
 from django.contrib import admin
-from .models import (
-    UserProfile,
-    Instrumento,
-    FactorConversion,
-    ArchivoCarga,
-    CargaError,
-    CalificacionTributaria,
-    HistorialCalificacion,
-    Auditoria,
-    CargaRegistro,
-)
+from . import models
 
-admin.site.register(Instrumento)
-admin.site.register(FactorConversion)
-admin.site.register(ArchivoCarga)
-admin.site.register(CargaError)
-admin.site.register(CalificacionTributaria)
-admin.site.register(HistorialCalificacion)
-admin.site.register(CargaRegistro)
+@admin.register(models.Contribuyente)
+class ContribuyenteAdmin(admin.ModelAdmin):
+    list_display = ('rut', 'razon_social', 'email', 'telefono', 'activo', 'fecha_creacion')
+    search_fields = ('rut', 'razon_social', 'email')
+    list_filter = ('activo', 'tipo_contribuyente')
+    readonly_fields = ('fecha_creacion', 'fecha_actualizacion')
+    ordering = ('-fecha_creacion',)
 
+class CalificacionTributariaInline(admin.TabularInline):
+    model = models.CalificacionTributaria
+    fk_name = 'rut_contribuyente'
+    extra = 0
+    readonly_fields = ('fecha_creacion', 'fecha_actualizacion')
 
-@admin.register(UserProfile)
-class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ("get_username", "get_email", "role", "activo")
+@admin.register(models.TipoCalificacion)
+class TipoCalificacionAdmin(admin.ModelAdmin):
+    list_display = ('codigo', 'descripcion', 'categoria', 'activo', 'monto_minimo', 'monto_maximo')
+    search_fields = ('codigo', 'descripcion')
 
-    def get_username(self, obj):
-        return obj.user.username
-    get_username.short_description = "Usuario"
+@admin.register(models.CalificacionTributaria)
+class CalificacionTributariaAdmin(admin.ModelAdmin):
+    list_display = ('id_calificacion', 'rut_contribuyente', 'codigo_tipo_calificacion', 'fecha_calificacion', 'monto_anual', 'vigente')
+    search_fields = ('id_calificacion', 'rut_contribuyente__rut')
+    list_filter = ('vigente', 'estado', 'codigo_tipo_calificacion')
+    readonly_fields = ('fecha_creacion', 'fecha_actualizacion')
+    ordering = ('-fecha_calificacion',)
 
-    def get_email(self, obj):
-        return obj.user.email
-    get_email.short_description = "Correo"
-
-@admin.register(Auditoria)
-class AuditoriaAdmin(admin.ModelAdmin):
-    list_display = ('usuario', 'accion', 'fecha', 'ip')
-    search_fields = ('usuario__username', 'accion')
-    list_filter = ('fecha',)
+@admin.register(models.DocumentoTributario)
+class DocumentoTributarioAdmin(admin.ModelAdmin):
+    list_display = ('id_documento', 'rut_contribuyente', 'tipo_documento', 'fecha_emision', 'monto_documento')
+    search_fields = ('id_documento', 'rut_contribuyente__rut')
+    readonly_fields = ('fecha_creacion', 'fecha_actualizacion')

@@ -1,0 +1,67 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}NUAM{% endblock %}</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="{% static 'css/logo_nuam.png' %}" alt="NUAM">
+      </div>
+
+      <nav class="nav">
+        <a href="{% url 'frontend:dashboard' %}" class="{% if request.path == '/dashboard/' %}active{% endif %}">
+          <span>🏠</span> Inicio
+        </a>
+
+        <a href="{% url 'frontend:calificaciones' %}" class="{% if '/calificaciones' in request.path %}active{% endif %}">
+          <span>📊</span> Calificaciones
+        </a>
+
+        <a href="{% url 'frontend:carga' %}" class="{% if '/carga' in request.path %}active{% endif %}">
+          <span>📤</span> Carga
+        </a>
+
+        <a href="{% url 'frontend:busqueda' %}" class="{% if '/busqueda' in request.path %}active{% endif %}">
+          <span>🔎</span> Búsqueda
+        </a>
+
+        <a href="{% url 'frontend:perfil_usuario' %}" class="{% if '/perfil' in request.path %}active{% endif %}">
+          <span>👤</span> Perfil
+        </a>
+      </nav>
+
+      <div class="small">Usuario: <strong>{{ user.username }}</strong></div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+      <header class="topbar">
+        <div class="left">
+          <div style="font-weight:700;color:var(--nuam-dark)"></div>
+        </div>
+        <div class="user">
+          <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
+          <div style="text-align:right">
+            <div style="font-weight:700">{{ user.username }}</div>
+            <div style="font-size:12px;color:var(--muted)">{{ user.email }}</div>
+          </div>
+          <a href="{% url 'frontend:logout' %}" class="btn small" style="background:transparent;color:var(--nuam-dark);border:1px solid #ff0000;margin-left:12px">Cerrar sesión</a>
+        </div>
+      </header>
+
+      <main class="container">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+  </div>
+</body>
+</html>

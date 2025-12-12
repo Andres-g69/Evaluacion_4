@@ -1,148 +1,87 @@
+# api/serializers.py
 from rest_framework import serializers
-from django.contrib.auth.models import User
-from .models import (
-    UserProfile,
-    Instrumento,
-    FactorConversion,
-    ArchivoCarga,
-    CargaError,
-    CalificacionTributaria,
-    HistorialCalificacion,
-    Auditoria,
-    CargaRegistro,
-)
+from . import models
+from api.models import CargaArchivo
 
-# =============================
-# USER & PROFILE
-# =============================
-class UserSerializer(serializers.ModelSerializer):
+class CargaArchivoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ["id", "username", "email", "first_name", "last_name"]
-
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source='user.username', read_only=True)
-    email = serializers.EmailField(source='user.email', read_only=True)
-
-    class Meta:
-        model = UserProfile
-        fields = ['id', 'username', 'email', 'role', 'activo']
-
-# =============================
-# INSTRUMENTO
-# =============================
-class InstrumentoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Instrumento
+        model = CargaArchivo
         fields = "__all__"
 
 
-# =============================
-# FACTOR CONVERSION
-# =============================
-class FactorConversionSerializer(serializers.ModelSerializer):
+class TipoCalificacionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = FactorConversion
-        fields = "__all__"
+        model = models.TipoCalificacion
+        fields = '__all__'
+        read_only_fields = ('fecha_creacion',)
 
-
-# =============================
-# ARCHIVO DE CARGA + ERRORES
-# =============================
-class CargaErrorSerializer(serializers.ModelSerializer):
+class ContribuyenteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CargaError
-        fields = ["id", "linea", "mensaje"]
-
-
-class ArchivoCargaSerializer(serializers.ModelSerializer):
-    usuario = UserSerializer(read_only=True)
-    errores = CargaErrorSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = ArchivoCarga
+        model = models.Contribuyente
         fields = [
-            "id",
-            "archivo",
-            "usuario",
-            "fecha_carga",
-            "estado",
-            "tipo_archivo",
-            "mensaje",
-            "errores",
+            'rut', 'razon_social', 'direccion', 'telefono', 'email',
+            'fecha_inscripcion', 'tipo_contribuyente', 'activo',
+            'fecha_creacion', 'fecha_actualizacion',
+            'usuario_creacion', 'usuario_actualizacion'
         ]
+        read_only_fields = ('fecha_creacion', 'fecha_actualizacion')
 
-
-# =============================
-# CALIFICACIONES TRIBUTARIAS
-# =============================
 class CalificacionTributariaSerializer(serializers.ModelSerializer):
-    creado_por = UserSerializer(read_only=True)
-    instrumento = InstrumentoSerializer(read_only=True)
-    factor = FactorConversionSerializer(read_only=True)
-    archivo_origen = ArchivoCargaSerializer(read_only=True)
+    rut_contribuyente = ContribuyenteSerializer(read_only=True)
+    rut_contribuyente_id = serializers.CharField(write_only=True, required=True)
 
-    instrumento_id = serializers.PrimaryKeyRelatedField(
-        queryset=Instrumento.objects.all(), source="instrumento", write_only=True
-    )
-    factor_id = serializers.PrimaryKeyRelatedField(
-        queryset=FactorConversion.objects.all(), source="factor", allow_null=True, required=False, write_only=True
-    )
-    archivo_origen_id = serializers.PrimaryKeyRelatedField(
-        queryset=ArchivoCarga.objects.all(), source="archivo_origen", allow_null=True, required=False, write_only=True
-    )
+    codigo_tipo_calificacion = TipoCalificacionSerializer(read_only=True)
+    codigo_tipo_calificacion_id = serializers.CharField(write_only=True, required=True)
 
     class Meta:
-        model = CalificacionTributaria
+        model = models.CalificacionTributaria
         fields = [
-            "id",
-            "instrumento",
-            "instrumento_id",
-            "rut",
-            "tipo",
-            "monto",
-            "factor",
-            "factor_id",
-            "fecha",
-            "estado",
-            "comentario",
-            "archivo_origen",
-            "archivo_origen_id",
-            "creado_por",
-            "creado_en",
-            "actualizado_en",
+            'id_calificacion',
+            'rut_contribuyente', 'rut_contribuyente_id',
+            'codigo_tipo_calificacion', 'codigo_tipo_calificacion_id',
+            'fecha_calificacion', 'monto_anual', 'periodo',
+            'estado', 'observaciones', 'fecha_vencimiento', 'vigente',
+            'fecha_creacion', 'fecha_actualizacion',
+            'usuario_creacion', 'usuario_actualizacion'
         ]
+        read_only_fields = ('id_calificacion', 'fecha_creacion', 'fecha_actualizacion')
 
+    def create(self, validated_data):
+        rut = validated_data.pop('rut_contribuyente_id')
+        tipo = validated_data.pop('codigo_tipo_calificacion_id')
+        contrib = models.Contribuyente.objects.get(pk=rut)
+        tipo_obj = models.TipoCalificacion.objects.get(pk=tipo)
+        cal = models.CalificacionTributaria.objects.create(
+            rut_contribuyente=contrib,
+            codigo_tipo_calificacion=tipo_obj,
+            **validated_data
+        )
+        return cal
 
-# =============================
-# HISTORIAL CALIFICACIONES
-# =============================
-class HistorialCalificacionSerializer(serializers.ModelSerializer):
-    usuario = UserSerializer(read_only=True)
+    def update(self, instance, validated_data):
+        rut = validated_data.pop('rut_contribuyente_id', None)
+        tipo = validated_data.pop('codigo_tipo_calificacion_id', None)
+        if rut:
+            instance.rut_contribuyente = models.Contribuyente.objects.get(pk=rut)
+        if tipo:
+            instance.codigo_tipo_calificacion = models.TipoCalificacion.objects.get(pk=tipo)
+        return super().update(instance, validated_data)
 
-    class Meta:
-        model = HistorialCalificacion
-        fields = ["id", "calificacion", "usuario", "accion", "descripcion", "fecha"]
-
-
-# =============================
-# AUDITORIA GENERAL
-# =============================
-class AuditoriaSerializer(serializers.ModelSerializer):
-    usuario = UserSerializer(read_only=True)
-
-    class Meta:
-        model = Auditoria
-        fields = ["id", "usuario", "accion", "fecha", "ip", "detalle"]
-
-
-# =============================
-# REGISTROS DE CARGA
-# =============================
-class CargaRegistroSerializer(serializers.ModelSerializer):
-    usuario = UserSerializer(read_only=True)
+class DocumentoTributarioSerializer(serializers.ModelSerializer):
+    rut_contribuyente = ContribuyenteSerializer(read_only=True)
+    rut_contribuyente_id = serializers.CharField(write_only=True, required=True)
 
     class Meta:
-        model = CargaRegistro
-        fields = ["id", "archivo", "usuario", "fecha_registro", "descripcion"]
+        model = models.DocumentoTributario
+        fields = '__all__'
+        read_only_fields = ('id_documento', 'fecha_creacion', 'fecha_actualizacion')
+
+    def create(self, validated_data):
+        rut = validated_data.pop('rut_contribuyente_id')
+        contrib = models.Contribuyente.objects.get(pk=rut)
+        return models.DocumentoTributario.objects.create(rut_contribuyente=contrib, **validated_data)
+
+class PoblacionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Poblacion
+        fields = '__all__'

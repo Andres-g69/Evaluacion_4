@@ -1,0 +1,49 @@
+{% extends 'frontend/BaseDashboard.html' %}
+{% block content %}
+<h1>Editar Calificación</h1>
+
+<form id="formEditar" class="form-card">
+  {% csrf_token %}
+  <input type="hidden" id="id_cal" value="{{ calificacion.id_calificacion }}" />
+
+  <label>RUT Contribuyente (ej: 11.111.111-1)</label>
+  <input id="rut" class="input" value="{{ calificacion.rut_contribuyente }}" required>
+
+  <label>Tipo Calificación (código)</label>
+  <select id="tipoSelect" class="input" value="{{ calificacion.codigo_tipo_calificacion }}"></select>
+
+  <label>Instrumento</label>
+  <input id="instrumento" class="input" value="{{ calificacion.instrumento }}" required>
+
+  <label>Periodo (año)</label>
+  <input id="periodo" type="number" class="input" value="{{ calificacion.periodo }}" required>
+
+  <label>Monto anual</label>
+  <input id="monto" type="number" step="0.01" class="input" value="{{ calificacion.monto_anual }}" required>
+
+  <label>Fecha calificación</label>
+  <input id="fecha" type="date" class="input" value="{{ calificacion.fecha_calificacion }}" required>
+
+  <label>Fecha vencimiento</label>
+  <input id="fecha_venc" type="date" class="input" value="{{ calificacion.fecha_vencimiento }}">
+
+  <label>Estado</label>
+  <input id="estado" class="input" value="{{ calificacion.estado }}">
+
+  <label>Observaciones</label>
+  <textarea id="observaciones" class="input">{{ calificacion.observaciones }}</textarea>
+
+  <label>Vigente</label>
+  <select id="vigente" class="input">
+    <option value="true" {% if calificacion.vigente == 'true' %}selected{% endif %}>Sí</option>
+    <option value="false" {% if calificacion.vigente == 'false' %}selected{% endif %}>No</option>
+  </select>
+
+  <div style="margin-top:12px;">
+    <button type="submit" class="btn">Guardar</button>
+    <a class="btn ghost" href="{% url 'frontend:calificacion_list' %}">Cancelar</a>
+  </div>
+</form>
+
+<script src="{% static 'js/editar.js' %}"></script>
+{% endblock %}

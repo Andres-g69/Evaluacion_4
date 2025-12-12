@@ -1,32 +1,36 @@
+# api/forms.py
 from django import forms
-from .models import CalificacionTributaria, Instrumento, FactorConversion
+from .models import CalificacionTributaria, TipoCalificacion, Contribuyente
+
+
+
+class TipoCalificacionForm(forms.ModelForm):
+    class Meta:
+        model = TipoCalificacion
+        fields = [
+            'codigo', 'descripcion', 'categoria', 'monto_minimo', 'monto_maximo', 'requisitos', 'activo'
+        ]
+        widgets = {
+            'monto_minimo': forms.NumberInput(attrs={'step': '0.01'}),
+            'monto_maximo': forms.NumberInput(attrs={'step': '0.01'}),
+            'requisitos': forms.Textarea(attrs={'rows': 4}),
+        }
 
 class CalificacionTributariaForm(forms.ModelForm):
-    # 🔽 Instrumento como lista desplegable
-    instrumento = forms.ChoiceField(
-        choices=Instrumento.INSTRUMENTO_CHOICES,
-        required=False,
-        label="Instrumento",
-        widget=forms.Select(attrs={'class': 'form-control'})
-    )
-
-    # 🔽 Factor como lista desplegable
-    factor = forms.ChoiceField(
-        choices=FactorConversion.FACTOR_CHOICES,
-        required=False,
-        label="Factor de Conversión",
-        widget=forms.Select(attrs={'class': 'form-control'})
-    )
-
     class Meta:
         model = CalificacionTributaria
-        # Excluimos campos automáticos o de auditoría
-        exclude = ['creado_por', 'creado_en', 'actualizado_en', 'archivo_origen']
+        fields = [
+            'rut_contribuyente',
+            'codigo_tipo_calificacion',
+            'fecha_calificacion',
+            'monto_anual',
+            'periodo',
+            'estado',
+            'observaciones',
+            'fecha_vencimiento',
+            'vigente'
+        ]
         widgets = {
-            'rut': forms.TextInput(attrs={'class': 'form-control'}),
-            'monto': forms.NumberInput(attrs={'class': 'form-control'}),
-            'fecha': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'tipo': forms.Select(attrs={'class': 'form-control'}),
-            'estado': forms.TextInput(attrs={'class': 'form-control'}),
-            'comentario': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'fecha_calificacion': forms.DateInput(attrs={'type': 'date'}),
+            'fecha_vencimiento': forms.DateInput(attrs={'type': 'date'}),
         }

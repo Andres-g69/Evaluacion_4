@@ -1,0 +1,48 @@
+{% extends "frontend/BaseDashboard.html" %}
+{% block title %}Búsqueda Avanzada{% endblock %}
+
+{% block content %}
+<div class="page-title">
+  <div>
+    <h1>Búsqueda Avanzada</h1>
+    <p class="muted">Filtra calificaciones por RUT rápidamente.</p>
+  </div>
+</div>
+
+<div class="form-card">
+  <form method="GET" action="{% url 'api:calificacion_read_view' %}">
+    <div style="display:flex;gap:12px;align-items:end">
+      <div style="flex:1">
+        <label>RUT</label>
+        <input type="text" name="rut" placeholder="11.111.111-1" value="{{ request.GET.rut }}">
+      </div>
+      <div>
+        <button class="btn" type="submit">Buscar</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div style="margin-top:18px">
+  <table class="table">
+    <thead>
+      <tr><th>ID</th><th>Instrumento</th><th>RUT</th><th>Tipo</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr>
+    </thead>
+    <tbody>
+      {% for c in calificaciones %}
+      <tr>
+        <td>{{ c.id }}</td>
+        <td>{{ c.instrumento }}</td>
+        <td>{{ c.rut }}</td>
+        <td>{{ c.tipo }}</td>
+        <td>{{ c.estado }}</td>
+        <td>{{ c.fecha|date:"d/m/Y" }}</td>
+        <td><a href="{% url 'api:calificacion_read_detail_view' c.id %}" class="btn small ghost">Ver</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align:center;padding:18px">No hay resultados</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
