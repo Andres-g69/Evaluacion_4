@@ -1,3 +1,5 @@
+Bastian Cabello y Andrés González
+
 🛠️ Instalación del Sistema NUAM en Linux
 
 Sigue los pasos a continuación para instalar y ejecutar el proyecto NUAM en un entorno Linux.
