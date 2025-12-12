@@ -7,12 +7,12 @@ Sigue los pasos a continuación para instalar y ejecutar el proyecto NUAM en un 
 
 Abre una terminal y clona el proyecto desde GitHub:
 
-- git clone https://github.com/Andres-g69/NUAM.git
+- git clone https://github.com/Andres-g69/Evaluacion_4.git
 
 
 Luego entra al directorio del proyecto:
 
-- cd NUAM
+- cd Evaluacion_4
 
 
 2️⃣ Crear un entorno virtual (recomendado)
@@ -43,7 +43,7 @@ Instala todas las librerías necesarias desde el archivo requirements.txt:
 - pip install -r requirements.txt
 
 - sudo mysql
-- source /home/frontend1/NUAM/db_setup.sql; (colocar direccion de archivo db_setup.ql)
+- source /home/frontend1/Evaluacion_4/db_setup.sql; (colocar direccion de archivo db_setup.ql)
 - exit
 
 4️⃣ Aplicar las migraciones de la base de datos
@@ -73,7 +73,7 @@ Inicia el servidor de desarrollo de Django:
 
 Por defecto, el servidor estará disponible en:
 
-👉 http://127.0.0.1:8000/
+👉 https://127.0.0.1
 
 
 7️⃣ Acceder al sistema
@@ -87,14 +87,14 @@ Una vez iniciado el servidor, puedes acceder a las siguientes rutas principales:
 - Dashboard principal: /dashboard/
 
 Ejemplo:
-http://127.0.0.1:8000/login/
+https://127.0.0.1/login/
 
 
 8️⃣Acceder a Panel de Administración
 
 De la misma manera de las rutas principales seguiremos con el panel de administración:
 
-- http://127.0.0.1:8000/admin/
+- https://127.0.0.1/admin/
 
 - con los valores del superuser creados anteriormente iniciar sesion
 
