@@ -48,6 +48,62 @@ Instala todas las librerías necesarias desde el archivo requirements.txt:
 - source /home/frontend1/Evaluacion_4/db_setup.sql; (colocar direccion de archivo db_setup.ql)
 - exit
 
+- Instalación de los componentes de Kafka
+
+El sistema utiliza Apache Kafka junto con Zookeeper, desplegados mediante contenedores Docker.
+
+🔹 Requisitos previos
+
+Antes de comenzar, asegúrese de contar con:
+
+Docker
+
+Docker Compose
+
+Git
+
+🔹 Instalación y ejecución
+
+Clonar el repositorio del proyecto:
+
+git clone <url-del-repositorio>
+cd <nombre-del-proyecto>
+
+
+Levantar los servicios de Kafka y Zookeeper:
+
+docker-compose up -d
+
+
+Verificar que los contenedores estén en ejecución:
+
+docker ps
+
+Instalación de certificados de seguridad
+
+Para asegurar la comunicación entre los servicios y las APIs, el sistema utiliza certificados de seguridad (SSL/TLS).
+
+🔹 Generación de certificados
+
+Crear un directorio para los certificados:
+
+mkdir certs
+
+
+Generar un certificado autofirmado:
+
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+
+
+Guardar los certificados generados en el directorio correspondiente del proyecto.
+
+🔹 Configuración
+
+Los certificados deben ser referenciados en la configuración del servidor API.
+
+Kafka puede configurarse para usar SSL si se requiere comunicación segura entre brokers y clientes.
+
+
 4️⃣ Aplicar las migraciones de la base de datos
 
 Ejecuta los siguientes comandos para crear las tablas necesarias en la base de datos:
